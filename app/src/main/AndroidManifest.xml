@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="zeus.test">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:name=".MyApplication"
+        android:label="@string/app_name"
+        android:supportsRtl="true">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <!--这是通过预埋activity的方式来加载插件，也可以通过以下面那个骗过android系统-->
+        <activity android:name="zeus.testplugin.MainActivity"/>
+        <!--校验用的activity,为了骗过android的activity存在校验-->
+        <activity android:name="com.zeus.ZeusActivityForStandard"/>
+    </application>
+
+</manifest>

@@ -1,0 +1,6 @@
+{
+    "name": "zeusplugin_test",
+    "minVersion": "1",
+    "version": "1",
+    "mainClass": "zeus.testplugin.MainActivity"
+}

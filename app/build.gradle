@@ -1,0 +1,77 @@
+apply plugin: 'com.android.application'
+
+//start----------补丁相关，使用gradle插件，如果宿主是只运行于android 4.4及以上可以不添加这些代码------------------
+apply plugin: 'patch-gradle-plugin'
+//end------------补丁相关，使用gradle插件，如果宿主是只运行于android 4.4及以上可以不添加这些代码------------------
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '23.0.2'
+
+    defaultConfig {
+        applicationId "zeus.test"
+        minSdkVersion 8
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    /**
+     * --PLUG-resoure-proguard 表示资源混淆，去掉则资源不混淆
+     * --PLUG-resoure-id  表示资源id命名（Package ID），后面参数表示对应资源id，去掉则为系统应用默认id'0x7f'
+     */
+    aaptOptions.additionalParameters '--PLUG-resoure-proguard', '--PLUG-resoure-id', '0x7f'
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile project(':ZeusPlugin')
+}
+
+
+//start----------补丁相关，使用gradle插件，如果宿主是只运行于android 4.4及以上可以不添加这些代码------------------
+//如果enable为true则表明打出的包会在每个类的构造函数中添加如下代码:if (Boolean.FALSE.booleanValue())System.out.println(Predicate.class);
+patchPlugin{
+    enable = true
+}
+//end------------补丁相关，使用gradle插件，如果宿主是只运行于android 4.4及以上可以不添加这些代码------------------
+
+//start----------插件相关的，用来生成sdk-jar的------------------
+task buildJar(dependsOn: ['assembleDebug'], type: Jar) {
+
+    appendix = "master"
+    baseName = "zeus"
+    version = "1.0.0"
+    classifier = "release"
+
+    //后缀名
+    extension = "jar"
+    //最终的 Jar 包名，如果没设置，默认为 [baseName]-[appendix]-[version]-[classifier].[extension]
+    archiveName = "plugin_sdk.jar"
+
+    //需打包的资源所在的路径集
+    //宿主的类文件
+    def srcClassDir = [project.findProject(':app').buildDir.absolutePath + "/intermediates/classes/debug"];
+    //插件框架的类文件
+    def srcClassDir1 = [project.findProject(':ZeusPlugin').buildDir.absolutePath + "/intermediates/classes/debug"]
+    //初始化资源路径集
+    from srcClassDir
+    from srcClassDir1
+    //添加进来的都是不打包到sdk中的，去除路径集下部分的资源
+//    exclude "zeus/test/BuildConfig.class"
+//    exclude "zeus/test/BuildConfig\$*.class"
+    //以下是资源id是否打包到sdk中
+//    exclude "**/R.class"
+//    exclude "**/R\$*.class"
+
+    //只导入资源路径集下的部分资源,想添加什么类打包到sdk中就修改此处，默认全部打包
+    include "**/*.class"
+
+    //注: exclude include 支持可变长参数
+}
+//end----------插件相关的，用来生成sdk-jar的------------------

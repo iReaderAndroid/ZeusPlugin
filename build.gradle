@@ -1,0 +1,37 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        jcenter()
+        //--start-----补丁相关-------
+        mavenCentral()
+        maven {
+            url 'gradleplugin'
+        }
+        //--end-----补丁相关-------
+    }
+    dependencies {
+        //设置为2.0以上可能会打开instant run,那么补丁要想调试需要进行代码上的更改，具体请看PluginManager.java中的loadHotfixPluginClassLoader()
+        classpath 'com.android.tools.build:gradle:1.5.0'
+
+        //--start-----补丁相关-------
+        classpath 'com.zhangyue.gradle.plugin:patch-gradle-plugin:1.0.0'
+        //--end-----补丁相关-------
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        //--start-----补丁相关-------
+        mavenCentral()
+        maven {
+            url 'gradleplugin'
+        }
+        //--end-----补丁相关-------
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
