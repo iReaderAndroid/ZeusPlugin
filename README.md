@@ -1,7 +1,5 @@
 # 欢迎使用ZeusPlugin
 
-[TOC]
-
 本项目为`ZeusPlugin`插件框架项目，`ZeusPlugin`为插件框架代码，`app`为测试插件与补丁的项目demo，`testplugin`为插件demo, `testhotfix`为补丁`demo`。绝大部分核心代码都在`PluginManger.java`中。`PluginManager`也是入口类，核心方法是`inite`初始化、`loadLastVersionPlugin`加载插件、`reloadInstalledPluginResources`加载插件与补丁的资源、`loadHotfixPluginClassLoader`加载补丁的类。插件与补丁更新的最小单位是`java`类(不局限四大组件)。
 
 ## 插件的定位
