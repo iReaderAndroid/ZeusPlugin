@@ -85,6 +85,7 @@
 # LICENSE
 
 ```
+MIT LICENSE 
 Copyright (c) 2016 huangjian
 
 Permission is hereby granted, free of charge, to any person obtaining
