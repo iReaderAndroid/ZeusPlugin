@@ -655,18 +655,16 @@ public class PluginManager {
 
     public static void startActivity(Activity activity, Intent intent){
         ComponentName componentName = intent.getComponent();
-        Intent realIntent = new Intent();
-        realIntent.setClassName(componentName.getPackageName(),PluginConfig.PLUGIN_ACTIVITY_FOR_STANDARD);
-        realIntent.putExtra(PluginConfig.PLUGIN_REAL_ACTIVITY, componentName.getClassName());
-        activity.startActivity(realIntent);
+        intent.setClassName(componentName.getPackageName(),PluginConfig.PLUGIN_ACTIVITY_FOR_STANDARD);
+        intent.putExtra(PluginConfig.PLUGIN_REAL_ACTIVITY, componentName.getClassName());
+        activity.startActivity(intent);
     }
 
     public static void startActivity(Intent intent){
         ComponentName componentName = intent.getComponent();
-        Intent realIntent = new Intent();
-        realIntent.setClassName(componentName.getPackageName(),PluginConfig.PLUGIN_ACTIVITY_FOR_STANDARD);
-        realIntent.putExtra(PluginConfig.PLUGIN_REAL_ACTIVITY, componentName.getClassName());
-        realIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mBaseContext.startActivity(realIntent);
+        intent.setClassName(componentName.getPackageName(),PluginConfig.PLUGIN_ACTIVITY_FOR_STANDARD);
+        intent.putExtra(PluginConfig.PLUGIN_REAL_ACTIVITY, componentName.getClassName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mBaseContext.startActivity(intent);
     }
 }

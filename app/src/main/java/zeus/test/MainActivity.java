@@ -46,16 +46,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 //第一次启动是宿主，后面就是补丁，这里的测试程序即使插件，也是补丁。
-                Class a = Predicate.class;
-//                HotfixTest.showText(MainActivity.this);
-
-                try {
-                    Class c = getClassLoader().loadClass(HotfixTest.class.getName());
-                    Method m = PluginUtil.getMethod(c,"showText",new Class[]{Context.class});
-                    m.invoke(null,MainActivity.this);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
+                HotfixTest.showText(MainActivity.this);
             }
         });
     }
