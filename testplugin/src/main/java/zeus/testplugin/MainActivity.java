@@ -1,12 +1,12 @@
 package zeus.testplugin;
 
 import android.os.Bundle;
-import zeus.plugin.BaseActivity;
+import zeus.plugin.ZeusBaseActivity;
 
 /**
  * Created by huangjian on 2016/7/8.
  */
-public class MainActivity extends BaseActivity {
+public class MainActivity extends ZeusBaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -27,8 +27,8 @@
 
 ## 使用步骤
 
-1. 使原应用程序的`Application`继承`BaseApplication`。或者将`BaseApplication`代码拷贝至自己的Application中。具体参考`app`中的`MyApplication`
-2. 使原应用程序的Activity都继承`BaseActivity`。或者将`BaseActivity`代码拷贝至自己的Activity中。具体参考app中的`MainActivity`
+1. 使原应用程序的`Application`继承`ZeusBaseApplication`。或者将`ZeusBaseApplication`代码拷贝至自己的Application中。具体参考`app`中的`MyApplication`
+2. 使原应用程序的Activity都继承`ZeusBaseActivity`。或者将`ZeusBaseActivity`代码拷贝至自己的Activity中。具体参考app中的`MainActivity`
 3. 内置的插件应放入assets目录中。插件的命名以`PluginConfig.EXP_PLUG_PREFIX`为前缀，以`PluginConfig.PLUGINWEB_APK_SUFF`为结尾。
 4. 内置的插件必须在插件项目的assets中添加`PluginConfig.PLUGINWEB_MAINIFEST_FILE(即plugin.meta)`文件，该文件为插件的配置文件。配置如插件名称(name)，插件版本(version)，插件支持的宿主最低版本(minVersion)，插件的入口类名(mainClass,可不写)。具体参考`testplugin`例子。
 5. `PluginConfig`中是一些可以配置的信息，建议除了内置插件目录以外都不要修改。

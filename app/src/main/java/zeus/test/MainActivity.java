@@ -1,25 +1,18 @@
 package zeus.test;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import com.android.internal.util.Predicate;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import zeus.plugin.BaseActivity;
+import zeus.plugin.ZeusBaseActivity;
 import zeus.plugin.PluginConfig;
 import zeus.plugin.PluginManager;
-import zeus.plugin.PluginUtil;
 
 
 /**
  * Created by huangjian on 2016/6/21.
  */
-public class MainActivity extends BaseActivity {
+public class MainActivity extends ZeusBaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
