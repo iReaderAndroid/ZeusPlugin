@@ -351,29 +351,33 @@ public class PluginManager {
             if (meta == null || Double.valueOf(meta.version) < version) return false;
 
             ClassLoader cl = mNowClassLoader;
-            //如果一个老版本的插件已经被加载了，则需要先移除
-            if (getLoadedPlugin() != null && getLoadedPlugin().containsKey(pluginId)) {
-                if (cl instanceof ZeusClassLoader) {
-                    ZeusClassLoader classLoader = (ZeusClassLoader) cl;
-                    //移除老版本的插件
-                    classLoader.removePlugin(pluginId);
-                    clearViewConstructorCache();
-                    //添加新版本的插件
-                    classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
-                }
-            } else {
-                if (cl instanceof ZeusClassLoader) {
-                    ZeusClassLoader classLoader = (ZeusClassLoader) cl;
-                    classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
+            if(PluginUtil.isHotFix(pluginId)){
+                loadHotfixPluginClassLoader(pluginId);
+            }else {
+                //如果一个老版本的插件已经被加载了，则需要先移除
+                if (getLoadedPlugin() != null && getLoadedPlugin().containsKey(pluginId)) {
+                    if (cl instanceof ZeusClassLoader) {
+                        ZeusClassLoader classLoader = (ZeusClassLoader) cl;
+                        //移除老版本的插件
+                        classLoader.removePlugin(pluginId);
+                        clearViewConstructorCache();
+                        //添加新版本的插件
+                        classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
+                    }
                 } else {
-                    ZeusClassLoader classLoader = new ZeusClassLoader(cl);
-                    classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
-                    PluginUtil.setField(mPackageInfo, "mClassLoader", classLoader);
-                    Thread.currentThread().setContextClassLoader(classLoader);
-                    mNowClassLoader = classLoader;
+                    if (cl instanceof ZeusClassLoader) {
+                        ZeusClassLoader classLoader = (ZeusClassLoader) cl;
+                        classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
+                    } else {
+                        ZeusClassLoader classLoader = new ZeusClassLoader(cl);
+                        classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
+                        PluginUtil.setField(mPackageInfo, "mClassLoader", classLoader);
+                        Thread.currentThread().setContextClassLoader(classLoader);
+                        mNowClassLoader = classLoader;
+                    }
                 }
+                putLoadedPlugin(pluginId, Integer.valueOf(meta.version));
             }
-            putLoadedPlugin(pluginId, Integer.valueOf(meta.version));
             reloadInstalledPluginResources();
         }
         return true;
@@ -533,7 +537,9 @@ public class PluginManager {
     }
 
     private synchronized static void loadHotfixPluginClassLoader(String pluginId) {
-        if (!PluginUtil.isHotFix(pluginId)) {
+        //如果不是补丁，或者该补丁已经加载过，则不做处理
+        if (!PluginUtil.isHotFix(pluginId) ||
+                (getLoadedPlugin() != null && getLoadedPlugin().containsKey(pluginId))) {
             return;
         }
         HashMap<String, Integer> installedPluginMaps = getInstalledPlugin();
