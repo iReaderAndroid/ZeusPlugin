@@ -1,4 +1,5 @@
-# 欢迎使用ZeusPlugin
+# [DEPRECATED]欢迎使用ZeusPlugin
+> 本项目已迁移到[iReaderAndroid/ZeusPlugin](https://github.com/iReaderAndroid/ZeusPlugin),后续维护和更新工作都会在迁移项目进行，请大家继续关注，谢谢！
 
 本项目为`ZeusPlugin`插件框架项目，`ZeusPlugin`为插件框架代码，`app`为测试插件与补丁的项目demo，`testplugin`为插件demo, `testhotfix`为补丁`demo`。绝大部分核心代码都在`PluginManger.java`中。`PluginManager`也是入口类，核心方法是`inite`初始化、`loadLastVersionPlugin`加载插件、`reloadInstalledPluginResources`加载插件与补丁的资源、`loadHotfixPluginClassLoader`加载补丁的类。插件与补丁更新的最小单位是`java`类(不局限四大组件)。
 
