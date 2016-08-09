@@ -41,6 +41,9 @@ class ZeusHotfixClassLoader extends ZeusPluginClassLoader {
     }
 
     protected void addAPKPath(String dexPath, String libPath, String pathInfo) {
+        if(mDexs == null){
+            ensureInit();
+        }
         int oldLength = mDexs.length;
         int index = oldLength + 1;
 

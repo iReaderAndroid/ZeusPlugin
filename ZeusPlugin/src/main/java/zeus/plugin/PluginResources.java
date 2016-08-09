@@ -3,6 +3,7 @@ package zeus.plugin;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
@@ -39,6 +40,11 @@ class PluginResources extends Resources {
     @Override
     public String getString(int id) throws NotFoundException {
         return super.getString(id);
+    }
+
+    @Override
+    public XmlResourceParser getLayout(int id) throws NotFoundException {
+        return super.getLayout(id);
     }
 
     @Override

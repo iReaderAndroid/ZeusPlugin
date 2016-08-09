@@ -593,8 +593,8 @@ public class PluginManager {
                 if (PluginUtil.isHotFix(pluginId)) {
                     PluginManifest manifest = getPlugin(pluginId).getPluginMeta();
                     try {
-                        int maxVersion = manifest.maxVersion == null ? Integer.MAX_VALUE : Integer.valueOf(manifest.maxVersion);
-                        int minVersion = manifest.minVersion == null ? -1 : Integer.valueOf(manifest.minVersion);
+                        int maxVersion = TextUtils.isEmpty(manifest.maxVersion) ? Integer.MAX_VALUE : Integer.valueOf(manifest.maxVersion);
+                        int minVersion = TextUtils.isEmpty(manifest.minVersion) ? -1 : Integer.valueOf(manifest.minVersion);
                         if (versionCode != -1 &&
                                 versionCode <= maxVersion &&
                                 versionCode >= minVersion) {
