@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import dalvik.system.DexClassLoader;
+import dalvik.system.DexFile;
+
+import static zeus.plugin.PluginUtil.*;
 
 /**
  * 插件管理类，管理插件的初始化、安装、卸载、加载等等
@@ -67,15 +69,15 @@ public class PluginManager {
      */
     public static void init(Application application) {
         //初始化一些成员变量和加载已安装的插件
-        mPackageInfo = PluginUtil.getField(application.getBaseContext(), "mPackageInfo");
+        mPackageInfo = getField(application.getBaseContext(), "mPackageInfo");
         mBaseContext = application.getBaseContext();
         mNowClassLoader = mBaseContext.getClassLoader();
         mBaseClassLoader = mBaseContext.getClassLoader();
         mNowResources = mBaseContext.getResources();
         mBaseResources = mNowResources;
         //更改系统的Instrumentation对象，以便创建插件的activity
-        Object mMainThread = PluginUtil.getField(mBaseContext,"mMainThread");
-        PluginUtil.setField(mMainThread,"mInstrumentation",new ZeusInstrumentation());
+        Object mMainThread = getField(mBaseContext,"mMainThread");
+        setField(mMainThread,"mInstrumentation",new ZeusInstrumentation());
         //创建插件的相关文件夹目录
         createPath();
         //加载已安装过的插件
@@ -94,8 +96,8 @@ public class PluginManager {
     }
 
     private static void createPath() {
-        PluginUtil.createDir(PluginUtil.getInsidePluginPath());
-        PluginUtil.createDir(PluginUtil.getDexCacheParentDirectPath());
+        createDir(getInsidePluginPath());
+        createDir(getDexCacheParentDirectPath());
     }
 
     /**
@@ -118,7 +120,8 @@ public class PluginManager {
                 //提前将dex文件优化为odex或者opt文件
                 if (ret) {
                     try {
-                        new DexClassLoader(PluginUtil.getAPKPath(key), PluginUtil.getDexCacheParentDirectPath(), null, mBaseClassLoader.getParent());
+                        String apkPath = getAPKPath(key);
+                        DexFile.loadDex(apkPath, ZeusPluginClassLoader.generateOutputName(apkPath, getDexCacheParentDirectPath()),0);
                     } catch (Throwable e) {
                         e.printStackTrace();
                     }
@@ -219,8 +222,8 @@ public class PluginManager {
                     }
                     if (count > 0) {
                         String result = new String(bos.toByteArray(), "UTF-8");
-                        PluginUtil.close(inputStream);
-                        PluginUtil.close(bos);
+                        close(inputStream);
+                        close(bos);
                         JSONArray jObject = new JSONArray(result);
                         int jLength = jObject.length();
                         for (int i = 0; i < jLength; i++) {
@@ -232,8 +235,8 @@ public class PluginManager {
                             }
                         }
                     }
-                    PluginUtil.close(inputStream);
-                    PluginUtil.close(bos);
+                    close(inputStream);
+                    close(bos);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return pluginList;
@@ -281,14 +284,14 @@ public class PluginManager {
                 e.printStackTrace();
                 return false;
             } finally {
-                PluginUtil.close(out);
+                close(out);
             }
         }
         return true;
     }
 
     private static String getInstalledPluginListFilePath() {
-        return PluginUtil.getInsidePluginPath() + PLUGIN_INSTALLED_LIST_FILE_NAME;
+        return getInsidePluginPath() + PLUGIN_INSTALLED_LIST_FILE_NAME;
     }
 
     /**
@@ -333,14 +336,14 @@ public class PluginManager {
             if (getLoadedPlugin() != null && getLoadedPlugin().containsKey(pluginId) && getLoadedPlugin().get(pluginId) >= version) {
                 return true;
             }
-            String pluginApkPath = PluginUtil.getAPKPath(pluginId);
+            String pluginApkPath = getAPKPath(pluginId);
             ZeusPlugin plugin = getPlugin(pluginId);
-            if (!PluginUtil.exists(pluginApkPath)) {
+            if (!exists(pluginApkPath)) {
                 if (getDefaultPlugin().containsKey(pluginId)) {
                     if (!plugin.installAssetPlugin()) {
                         return false;
                     } else {
-                        pluginApkPath = PluginUtil.getAPKPath(pluginId);
+                        pluginApkPath = getAPKPath(pluginId);
                     }
                 } else {
                     return false;
@@ -351,7 +354,7 @@ public class PluginManager {
             if (meta == null || Double.valueOf(meta.version) < version) return false;
 
             ClassLoader cl = mNowClassLoader;
-            if(PluginUtil.isHotFix(pluginId)){
+            if(isHotFix(pluginId)){
                 loadHotfixPluginClassLoader(pluginId);
             }else {
                 //如果一个老版本的插件已经被加载了，则需要先移除
@@ -362,16 +365,16 @@ public class PluginManager {
                         classLoader.removePlugin(pluginId);
                         clearViewConstructorCache();
                         //添加新版本的插件
-                        classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
+                        classLoader.addAPKPath(pluginId, pluginApkPath, getLibFileInside(pluginId), getInstalledPathInfo(pluginId));
                     }
                 } else {
                     if (cl instanceof ZeusClassLoader) {
                         ZeusClassLoader classLoader = (ZeusClassLoader) cl;
-                        classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
+                        classLoader.addAPKPath(pluginId, pluginApkPath, getLibFileInside(pluginId), getInstalledPathInfo(pluginId));
                     } else {
                         ZeusClassLoader classLoader = new ZeusClassLoader(cl);
-                        classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
-                        PluginUtil.setField(mPackageInfo, "mClassLoader", classLoader);
+                        classLoader.addAPKPath(pluginId, pluginApkPath, getLibFileInside(pluginId), getInstalledPathInfo(pluginId));
+                        setField(mPackageInfo, "mClassLoader", classLoader);
                         Thread.currentThread().setContextClassLoader(classLoader);
                         mNowClassLoader = classLoader;
                     }
@@ -400,7 +403,7 @@ public class PluginManager {
 
     private static void clearCacheObject(Object drawableCache) {
         if (drawableCache == null) return;
-        Method clearMethod = PluginUtil.getMethod(drawableCache.getClass(), "clear");
+        Method clearMethod = getMethod(drawableCache.getClass(), "clear");
         if (clearMethod != null) {
             try {
                 clearMethod.invoke(drawableCache);
@@ -409,9 +412,9 @@ public class PluginManager {
             }
         }
         //高android版本走这里
-        Object mThemedEntries = PluginUtil.getField(drawableCache, "mThemedEntries");
+        Object mThemedEntries = getField(drawableCache, "mThemedEntries");
         if (mThemedEntries != null) {
-            clearMethod = PluginUtil.getMethod(mThemedEntries.getClass(), "clear");
+            clearMethod = getMethod(mThemedEntries.getClass(), "clear");
             if (clearMethod != null) {
                 try {
                     clearMethod.invoke(mThemedEntries);
@@ -431,11 +434,11 @@ public class PluginManager {
     private static void clearResoucesDrawableCache(Resources resouces) {
         resouces.finishPreloading();
         resouces.flushLayoutCache();
-        clearCacheObject(PluginUtil.getField(resouces, "mDrawableCache"));
-        clearCacheObject(PluginUtil.getField(resouces, "mColorDrawableCache"));
-        clearCacheObject(PluginUtil.getField(resouces, "mColorStateListCache"));
-        clearCacheObject(PluginUtil.getField(resouces, "mAnimatorCache"));
-        clearCacheObject(PluginUtil.getField(resouces, "mStateListAnimatorCache"));
+        clearCacheObject(getField(resouces, "mDrawableCache"));
+        clearCacheObject(getField(resouces, "mColorDrawableCache"));
+        clearCacheObject(getField(resouces, "mColorStateListCache"));
+        clearCacheObject(getField(resouces, "mAnimatorCache"));
+        clearCacheObject(getField(resouces, "mStateListAnimatorCache"));
     }
 
     /**
@@ -451,7 +454,7 @@ public class PluginManager {
             if (mLoadedPluginList != null && mLoadedPluginList.size() != 0) {
                 //每个插件的packageID都不能一样
                 for (String id : mLoadedPluginList.keySet()) {
-                    addAssetPath.invoke(assetManager, PluginUtil.getAPKPath(id));
+                    addAssetPath.invoke(assetManager, getAPKPath(id));
                 }
             }
             //这里提前创建一个resource是因为Resources的构造函数会对AssetManager进行一些变量的初始化
@@ -461,9 +464,9 @@ public class PluginManager {
                     mBaseContext.getResources().getConfiguration());
 
 
-            PluginUtil.setField(mBaseContext, "mResources", newResources);
+            setField(mBaseContext, "mResources", newResources);
             //这是最主要的需要替换的，如果不支持插件运行时更新，只留这一个就可以了
-            PluginUtil.setField(mPackageInfo, "mResources", newResources);
+            setField(mPackageInfo, "mResources", newResources);
 
             //清除一下之前的resource的数据，释放一些内存
             //因为这个resource有可能还被系统持有着，内存都没被释放
@@ -472,7 +475,7 @@ public class PluginManager {
             mNowResources = newResources;
             //需要清理mtheme对象，否则通过inflate方式加载资源会报错
             //如果是activity动态加载插件，则需要把activity的mTheme对象也设置为null
-            PluginUtil.setField(mBaseContext, "mTheme", null);
+            setField(mBaseContext, "mTheme", null);
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -491,7 +494,7 @@ public class PluginManager {
             mLoadedPluginList.remove(pluginId);
             clearViewConstructorCache();
             if (mLoadedPluginList.size() == 0) {
-                PluginUtil.setField(mPackageInfo, "mClassLoader", mBaseClassLoader);
+                setField(mPackageInfo, "mClassLoader", mBaseClassLoader);
                 Thread.currentThread().setContextClassLoader(mBaseClassLoader);
                 mNowClassLoader = mBaseClassLoader;
                 Thread.currentThread().setContextClassLoader(mBaseClassLoader);
@@ -538,30 +541,36 @@ public class PluginManager {
 
     private synchronized static void loadHotfixPluginClassLoader(String pluginId) {
         //如果不是补丁，或者该补丁已经加载过，则不做处理
-        if (!PluginUtil.isHotFix(pluginId) ||
+        if (!isHotFix(pluginId) ||
                 (getLoadedPlugin() != null && getLoadedPlugin().containsKey(pluginId))) {
             return;
         }
         HashMap<String, Integer> installedPluginMaps = getInstalledPlugin();
         //如果开启了instant run，则需要更改为mBaseClassLoader.getParent();
         ClassLoader orgClassLoader = mBaseClassLoader;
+        //以下这段是补丁框架为了兼容android studio 2.0版本以上在debug时的instant run功能，在打正式包的时候请删除这段无用代码
+        //---start----
+        if(mBaseClassLoader.getParent().getClass().getSimpleName().equals("IncrementalClassLoader")){
+            orgClassLoader = mBaseClassLoader.getParent();
+        }
+        //---end----
         ClassLoader classLoader = orgClassLoader.getParent();
         ZeusHotfixClassLoader hotfixClassLoader;
         if (classLoader instanceof ZeusHotfixClassLoader) {
             hotfixClassLoader = (ZeusHotfixClassLoader) classLoader;
-            hotfixClassLoader.addAPKPath(PluginUtil.getAPKPath(pluginId),
-                    PluginUtil.getLibFileInside(pluginId),
-                    PluginUtil.getInstalledPathInfo(pluginId));
+            hotfixClassLoader.addAPKPath(getAPKPath(pluginId),
+                    getLibFileInside(pluginId),
+                    getInstalledPathInfo(pluginId));
         } else {
             ArrayList<String> infos = new ArrayList<>();
-            infos.add(PluginUtil.getInstalledPathInfo(pluginId));
-            hotfixClassLoader = new ZeusHotfixClassLoader(PluginUtil.getAPKPath(pluginId),
-                    PluginUtil.getDexCacheParentDirectPath(),
-                    PluginUtil.getLibFileInside(pluginId),
+            infos.add(getInstalledPathInfo(pluginId));
+            hotfixClassLoader = new ZeusHotfixClassLoader(getAPKPath(pluginId),
+                    getDexCacheParentDirectPath(),
+                    getLibFileInside(pluginId),
                     infos,
                     classLoader);
             hotfixClassLoader.setOrgAPKClassLoader(orgClassLoader);
-            PluginUtil.setField(orgClassLoader, "parent", hotfixClassLoader);
+            setField(orgClassLoader, "parent", hotfixClassLoader);
         }
         putLoadedPlugin(pluginId, installedPluginMaps.get(pluginId));
     }
@@ -587,16 +596,16 @@ public class PluginManager {
             }
 
             for (String pluginId : installedPluginMaps.keySet()) {
-                if (PluginUtil.isPlugin(pluginId)) {
+                if (isPlugin(pluginId)) {
                     if (classLoader == null) {
                         classLoader = new ZeusClassLoader(mBaseContext.getClassLoader());
                     }
-                    classLoader.addAPKPath(pluginId, PluginUtil.getAPKPath(pluginId), PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
+                    classLoader.addAPKPath(pluginId, getAPKPath(pluginId), getLibFileInside(pluginId), getInstalledPathInfo(pluginId));
                     putLoadedPlugin(pluginId, installedPluginMaps.get(pluginId));
                     isNeedLoadResource = true;
                 }
                 //热修复补丁,补丁一般只针对某个版本
-                if (PluginUtil.isHotFix(pluginId)) {
+                if (isHotFix(pluginId)) {
                     PluginManifest manifest = getPlugin(pluginId).getPluginMeta();
                     try {
                         int maxVersion = TextUtils.isEmpty(manifest.maxVersion) ? Integer.MAX_VALUE : Integer.valueOf(manifest.maxVersion);
@@ -618,7 +627,7 @@ public class PluginManager {
             }
             //设置原始APK所使用的ClassLoader
             if (classLoader != null) {
-                PluginUtil.setField(mPackageInfo, "mClassLoader", classLoader);
+                setField(mPackageInfo, "mClassLoader", classLoader);
                 Thread.currentThread().setContextClassLoader(classLoader);
                 mNowClassLoader = classLoader;
             }
@@ -649,7 +658,7 @@ public class PluginManager {
             if (plugin != null) {
                 return plugin;
             }
-            if (PluginUtil.iszeusPlugin(pluginId)) {
+            if (iszeusPlugin(pluginId)) {
                 plugin = new ZeusPlugin(pluginId);
             }
             mPluginMap.put(pluginId, plugin);
