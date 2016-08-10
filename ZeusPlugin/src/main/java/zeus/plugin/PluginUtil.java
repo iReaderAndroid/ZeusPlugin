@@ -118,6 +118,16 @@ public class PluginUtil {
     }
 
     /**
+     * 是否是插件
+     *
+     * @param pluginId 插件id
+     * @return 是否是插件或者补丁
+     */
+    public static boolean isPlugin(String pluginId) {
+        return !TextUtils.isEmpty(pluginId) && pluginId.startsWith(PluginConfig.EXP_PLUG_PREFIX);
+    }
+
+    /**
      * 是否是补丁文件
      *
      * @param pluginId 插件id

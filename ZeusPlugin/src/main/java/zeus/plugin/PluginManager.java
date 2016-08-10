@@ -587,7 +587,7 @@ public class PluginManager {
             }
 
             for (String pluginId : installedPluginMaps.keySet()) {
-                if (PluginUtil.iszeusPlugin(pluginId)) {
+                if (PluginUtil.isPlugin(pluginId)) {
                     if (classLoader == null) {
                         classLoader = new ZeusClassLoader(mBaseContext.getClassLoader());
                     }
