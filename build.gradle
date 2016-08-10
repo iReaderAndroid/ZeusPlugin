@@ -15,7 +15,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:1.5.0'
 
         //--start-----补丁相关-------
-        classpath 'com.zhangyue.gradle.plugin:patch-gradle-plugin:1.0.0'
+        classpath 'com.zeus.gradle.plugin:patch-gradle-plugin:1.0.0'
         //--end-----补丁相关-------
     }
 }
