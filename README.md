@@ -77,6 +77,8 @@
 
 > QQ群：`558449447`，添加请注明来自`ZeusPlugin`
 >
+>欢迎各位参加测试，该项目会持续维护
+>
 > <a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=4464e9ee4fc8b05ee3c4eeb4f4be97469c1cfe46cded6b00f4a887ebebb60916"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Android技术交流分享" title="Android技术交流分享"></a>
 
 # LICENSE
