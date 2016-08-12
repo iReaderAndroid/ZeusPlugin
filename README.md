@@ -1,5 +1,5 @@
 # 欢迎使用ZeusPlugin
-本项目为`ZeusPlugin`插件框架项目，`ZeusPlugin`为插件框架代码，`app`为测试插件与补丁的项目demo，`testplugin`为插件demo, `testhotfix`为补丁`demo`。绝大部分核心代码都在`PluginManger.java`中。`PluginManager`也是入口类，核心方法是`inite`初始化、`loadLastVersionPlugin`加载插件、`reloadInstalledPluginResources`加载插件与补丁的资源、`loadHotfixPluginClassLoader`加载补丁的类。插件与补丁更新的最小单位是`java`类(不局限四大组件)。
+本项目为[掌阅iReader](http://www.zhangyue.com/jobs)团队推出的`ZeusPlugin`插件框架产品项目，`ZeusPlugin`为插件框架的所有代码，`app`为测试插件与补丁的项目demo，`testplugin`为插件demo, `testhotfix`为补丁`demo`。绝大部分核心代码都在`PluginManger.java`中。`PluginManager`也是入口类，核心方法是`inite`初始化、`loadLastVersionPlugin`加载插件、`reloadInstalledPluginResources`加载插件与补丁的资源、`loadHotfixPluginClassLoader`加载补丁的类。插件与补丁更新的最小单位是`java`类(不局限四大组件)。
 
 ## 插件的定位
 
@@ -77,7 +77,9 @@
 
 > QQ群：`558449447`，添加请注明来自`ZeusPlugin`
 >
->欢迎各位参加测试，该项目会持续维护
+>欢迎各位参加测试，该项目会持续维护。
+>
+>欢迎加入[掌阅](http://www.zhangyue.com/jobs)大家庭，一起研究Android新技术。简历请发送`job@zhangyue.com`。
 >
 > <a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=4464e9ee4fc8b05ee3c4eeb4f4be97469c1cfe46cded6b00f4a887ebebb60916"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Android技术交流分享" title="Android技术交流分享"></a>
 
