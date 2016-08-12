@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import zeus.plugin.ZeusBaseActivity;
 import zeus.plugin.PluginConfig;
 import zeus.plugin.PluginManager;
 
@@ -12,7 +11,7 @@ import zeus.plugin.PluginManager;
 /**
  * Created by huangjian on 2016/6/21.
  */
-public class MainActivity extends ZeusBaseActivity {
+public class MainActivity extends BaseAppCompactActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

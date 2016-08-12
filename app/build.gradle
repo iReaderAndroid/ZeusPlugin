@@ -31,6 +31,7 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':ZeusPlugin')
+    compile 'com.android.support:appcompat-v7:23.1.1'
 }
 
 
