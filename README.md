@@ -34,7 +34,8 @@
 
 > 以下是补丁相关的。补丁与插件类似，只不过补丁把实时加载的功能去掉了。如果项目只运行在android 4.4及以上(art虚拟机，部分低于4.4的手机也可以去掉)，则1忽略，以上就已经支持补丁了，可以直接运行app模块，不需要以下的额外操作。
 
-10. 如果要支持bug fix的补丁功能，请把gradleplugin拷贝到工程里，并将project的`build.gradle`中的带有“`//-----补丁相关-------`”的相关配置移植到你的项目里。如果你的项目只支持android 4.4及以上时(比如内置应用)，不需要按照第当前移植即可支持bug fix补丁功能。具体请查看`testhotfix`模块。
+10. 如果要支持bug fix的补丁功能，请增加`zeusplugin:patch-gradle-plugin:1.0.0`依赖，并将project的`build.gradle`中的带有“`//-----补丁相关-------`”的相关配置移植到你的项目里。如果你的项目只支持android 4.4及以上时(比如内置应用)，不需要按照第当前移植即可支持bug fix补丁功能。具体请查看`testhotfix`模块。
+> 具体插件实现源码可以查看[PatchPluginForZeus](https://github.com/iReaderAndroid/PatchPluginForZeus)
 20. bug fix的补丁需要以`PluginConfig.EXP_PLUG_HOT_FIX_PREFIX`为开头，补丁apk中res文件夹中必须有实际的资源，实在没有就随便写个
     `com.android.internal.util.Predicate`要保留，故意让所有的类中都包含这个类，这个类系统也定义了，所以dalvik虚拟机生成dex的时候会给当前记一个标记，这样补丁才能实现。
 30. 插件与补丁都需要先安装，插件可以任意时刻进行加载，补丁则下次启动由框架加载，不提供实时加载，实时加载之后你的内存中的对象可能就会乱套了。插件与补丁的安装代码如下：`PluginManager.getPlugin(pluginName).install();`
