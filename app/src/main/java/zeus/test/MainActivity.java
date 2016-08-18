@@ -6,6 +6,7 @@ import android.view.View;
 
 import zeus.plugin.PluginConfig;
 import zeus.plugin.PluginManager;
+import zeus.test.hotfix.TestHotFixActivity;
 
 
 /**
@@ -37,8 +38,10 @@ public class MainActivity extends BaseAppCompactActivity {
         findViewById(R.id.test_hotfix).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //第一次启动是宿主，后面就是补丁，这里的测试程序即使插件，也是补丁。
-                HotfixTest.showText(MainActivity.this);
+//                //第一次启动是宿主，后面就是补丁，这里的测试程序即使插件，也是补丁。
+//                HotfixTest.showText(MainActivity.this);
+                Intent intent=new Intent(MainActivity.this,TestHotFixActivity.class);
+                startActivity(intent);
             }
         });
     }

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.os.Build;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 
@@ -447,12 +448,22 @@ public class PluginManager {
         try {
             AssetManager assetManager = AssetManager.class.newInstance();
             Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
-            addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
-            if (mLoadedPluginList != null && mLoadedPluginList.size() != 0) {
-                //每个插件的packageID都不能一样
-                for (String id : mLoadedPluginList.keySet()) {
-                    addAssetPath.invoke(assetManager, PluginUtil.getAPKPath(id));
+            if(Build.VERSION.SDK_INT<21){
+                addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
+                if (mLoadedPluginList != null && mLoadedPluginList.size() != 0) {
+                    //每个插件的packageID都不能一样
+                    for (String id : mLoadedPluginList.keySet()) {
+                        addAssetPath.invoke(assetManager, PluginUtil.getAPKPath(id));
+                    }
                 }
+            }else{
+                if (mLoadedPluginList != null && mLoadedPluginList.size() != 0) {
+                    //每个插件的packageID都不能一样
+                    for (String id : mLoadedPluginList.keySet()) {
+                        addAssetPath.invoke(assetManager, PluginUtil.getAPKPath(id));
+                    }
+                }
+                addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
             }
             //这里提前创建一个resource是因为Resources的构造函数会对AssetManager进行一些变量的初始化
             //还不能创建系统的Resources类，否则中兴系统会出现崩溃问题
