@@ -25,7 +25,8 @@ android {
      * --PLUG-resoure-proguard 表示资源混淆，去掉则资源不混淆
      * --PLUG-resoure-id  表示资源id命名（Package ID），后面参数表示对应资源id，去掉则为系统应用默认id'0x7f'
      */
-    aaptOptions.additionalParameters '--PLUG-resoure-proguard', '--PLUG-resoure-id', '0x7f'
+    //去掉为了让demo不需要替换aapt就可以运行
+    //    aaptOptions.additionalParameters '--PLUG-resoure-proguard', '--PLUG-resoure-id', '0x7f'
 }
 
 dependencies {

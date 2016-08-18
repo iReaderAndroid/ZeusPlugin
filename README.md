@@ -16,14 +16,6 @@
 
 > 以上就是我们的核心，**修改生成类和资源的成员变量**。
 
-## 支持运行时更新的原理
-
-- 插件更新后，插件在访问资源应该都是新插件中的资源。因此我们重新创建一个`Resources`，这个新的`Resources`只能访问宿主跟新插件中的资源。这解决了资源更新的问题。
-- 插件更新后，插件在生成类的时候应该生成新插件中的类。因此我们重新创建了一个插件ClassLoader来替换原来的`ClassLoader`，在方案中，一个插件对应一个`ClassLoader`，
-   `ZeusClassLoader`是个空壳，它内部有一个数组保存了所有的插件`ClassLoader`，`zeusClassLoader`首先查找原宿主`apk`的`ClassLoader`，因为宿主`apk`的`ClassLoader`的`parent`为补丁`ClassLoader`，所以先在补丁中查找类，然后在宿主apk中查找，最后依次在插件中查找。我们只要替换了插件`ClassLoader`，那么新的插件`ClassLoader`自然只能访问新插件中的类了。
-- 系统在解析`xml`生成`View`的时候都是通过反射来生成`View`的，系统为了加快速度会把所有已经反射过的`View`的构造函数都保存在`LayoutInflater`的静态成员变量`sConstructorMap`中，所以更新了插件后，我们会清除该`map`中的所有对象。
-- 在使用旧版本插件时，可以安装新版本插件，每个插件的安装地址都是随机的，有个`pathInfo`文件来保存最新插件的随机安装路径。一旦加载最新插件时，`ClassLoader`和`AssetManager`都指向最新版本的插件，当然`so`路径也是随机的。当软件退出或者再次启动的时候会清理掉老版本插件，因为`pathInfo`只保留最新插件的安装地址，这些老版本插件就已经不可访问了，只能加载最新版本的插件。
-
 ## 使用步骤
 
 1. 使原应用程序的`Application`继承`ZeusBaseApplication`。或者将`ZeusBaseApplication`代码拷贝至自己的Application中。具体参考`app`中的`MyApplication`
@@ -42,7 +34,8 @@
 
 > 以下是补丁相关的。补丁与插件类似，只不过补丁把实时加载的功能去掉了。如果项目只运行在android 4.4及以上(art虚拟机，部分低于4.4的手机也可以去掉)，则1忽略，以上就已经支持补丁了，可以直接运行app模块，不需要以下的额外操作。
 
-10. 如果要支持bug fix的补丁功能，请把gradleplugin拷贝到工程里，并将project的`build.gradle`中的带有“`//-----补丁相关-------`”的相关配置移植到你的项目里。如果你的项目只支持android 4.4及以上时(比如内置应用)，不需要按照第当前移植即可支持bug fix补丁功能。具体请查看`testhotfix`模块。
+10. 如果要支持bug fix的补丁功能，请增加`zeusplugin:patch-gradle-plugin:1.0.0`依赖，并将project的`build.gradle`中的带有“`//-----补丁相关-------`”的相关配置移植到你的项目里。如果你的项目只支持android 4.4及以上时(比如内置应用)，不需要按照第当前移植即可支持bug fix补丁功能。具体请查看`testhotfix`模块。
+> 具体插件实现源码可以查看[PatchPluginForZeus](https://github.com/iReaderAndroid/PatchPluginForZeus)
 20. bug fix的补丁需要以`PluginConfig.EXP_PLUG_HOT_FIX_PREFIX`为开头，补丁apk中res文件夹中必须有实际的资源，实在没有就随便写个
     `com.android.internal.util.Predicate`要保留，故意让所有的类中都包含这个类，这个类系统也定义了，所以dalvik虚拟机生成dex的时候会给当前记一个标记，这样补丁才能实现。
 30. 插件与补丁都需要先安装，插件可以任意时刻进行加载，补丁则下次启动由框架加载，不提供实时加载，实时加载之后你的内存中的对象可能就会乱套了。插件与补丁的安装代码如下：`PluginManager.getPlugin(pluginName).install();`
@@ -54,7 +47,7 @@
 
 1. 支持插件的安装、升级、卸载、版本管理
 2. 支持插件调用宿主的类与资源。要在插件中使用宿主的资源ID，需要使用public.xml将资源ID固定，public.xml如何使用请自行搜索，并将该ID添加到sdk-jar中，如果只是插件调用宿主中的某个类，然后这个使用了宿主资源则不需处理。
-3. 支持插件的动态实时升级。只需要调用`PluginManager.loadLastVersionPlugin(pluginName)`即可使用最新版本的插件。
+3. 支持运行时动态升级加载插件。调用PluginManager.getPlugin(pluginId).install()安装完成之后，只需要调用`PluginManager.loadLastVersionPlugin(pluginName)`如果没加载过插件会加载最新插件，如果已加过老版本的该插件则会替换为该插件的最新版本。
 4. 插件与宿主的关系和apk与android系统的关系接近。
     **如果插件中有与宿主重名的类，这个插件中的类只能被插件使用，宿主是不会使用插件中的类的。宿主只能通过显式loadClass的方式才能访问插件。**
 5. 当插件版本过多又怕新插件在早期apk中不支持，应编写一个类CTS测试(google强制厂商执行的兼容性测试)的小插件，该插件中会调用所有之前插件用到的宿主中的所有方法和成员等等。如果该小程序跑过了则说明新版本apk兼容所有插件。
@@ -77,12 +70,13 @@
 
 > QQ群：`558449447`，添加请注明来自`ZeusPlugin`
 >
+> <a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=4464e9ee4fc8b05ee3c4eeb4f4be97469c1cfe46cded6b00f4a887ebebb60916"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Android技术交流分享" title="Android技术交流分享"></a>
+>
 >欢迎各位参加测试，该项目会持续维护。
 >
->欢迎加入[掌阅](http://www.zhangyue.com/jobs)大家庭，一起研究Android新技术。简历请发送`job@zhangyue.com`。
 >
-> <a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=4464e9ee4fc8b05ee3c4eeb4f4be97469c1cfe46cded6b00f4a887ebebb60916"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Android技术交流分享" title="Android技术交流分享"></a>
-
+>另：欢迎加入[掌阅](http://www.zhangyue.com/jobs)大家庭，一起研究Android新技术。简历请发送`huangjian@zhangyue.com`,注明应聘方向。
+>
 # LICENSE
 
 ```
