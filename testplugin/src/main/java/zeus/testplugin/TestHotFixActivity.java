@@ -1,9 +1,9 @@
-package zeus.test.hotfix;
+package zeus.testplugin;
 
 import android.os.Bundle;
 
 import zeus.plugin.ZeusBaseActivity;
-import zeus.test.R;
+
 
 /**
  * Created by adison on 16/8/19.
