@@ -1,47 +1,8 @@
-# 欢迎使用ZeusPlugin
-本项目为[掌阅iReader](http://www.zhangyue.com/jobs)团队推出的`ZeusPlugin`插件框架产品项目，`ZeusPlugin`为插件框架的所有代码，`app`为测试插件与补丁的项目demo，`testplugin`为插件demo, `testhotfix`为补丁`demo`。绝大部分核心代码都在`PluginManger.java`中。`PluginManager`也是入口类，核心方法是`inite`初始化、`loadLastVersionPlugin`加载插件、`reloadInstalledPluginResources`加载插件与补丁的资源、`loadHotfixPluginClassLoader`加载补丁的类。插件与补丁更新的最小单位是`java`类(不局限四大组件)。
+# ZeusPlugin
 
-## 插件的定位
+可能是最精简的插件补丁框架
 
-提高某些功能的升级率，使功能可以不通过安装新apk版本进行更新，可以实现wifi/移动环境下用户无感知的更新功能。如果电商类的网页，可以通过url告知客户端使用哪个插件并可以指定最低版本，然后客户端发现存在符合的插件就加载使用。如:`http//www.baidu.com/a.php?p=zeusplugin_test&pversion=2`,表示该页面使用`zeusplugin_test`插件，插件的最低版本号为`2`。宿主发现存在符合的插件则加载并将该url传给插件，不存在则进入下载流程，下载完成后即可加载。插件的下发可以通过`push`或者轮训的方式预下载增量更新包，或者进入loading页面同步下载，下载完成后即可加载使用。这时插件就可以是`Fragment`、`View`、`Activity`等等。
-
-## 补丁使用的定位
-
-解决某个版本发布后的bug，或者是更新某个功能。由于代码会进行混淆，一个补丁通常只能对应一个版本。
-
-## 插件补丁框架的核心思想
-
-- 替换系统使用的`ClassLoader`，通过阅读源码发现系统反射四大组件都是用的`ContextImpl`中的`mPackageInfo`中的`mClassLoader`成员变量。所以为了能让系统生成四大组件，我们通过反射修改了`mClassLoader`成员变量。补丁原理则是`ClassLoader`优先查找补丁中的类，如果存在则返回，然后再查找原宿主中的类，我们是通过反射的方式设置宿主`ClassLoader`的`parent`成员来完成的。
-- 替换系统获取资源用到的`Resources`对象并使该对象可以访问到所有插件和补丁的资源,Resources是通过AssetManager来访问资源的。系统的`Resources`对象是`ContextImpl`的`mPackageInfo`中的`mResources`成员。因此我们生成了一个`PluginResources`对象并创建一个可以访问所有插件的`AssetManager`，反射调用`addAssetPath`将插件/补丁的路径都添加上。 通过反射修改了`mResources`成员变量。但是部分手机是通过获取调用`Activity/Application`中的`getResources`来访问，我们重写该方法，并返回生成的`PluginResources`。  
-
-> 以上就是我们的核心，**修改生成类和资源的成员变量**。
-
-## 使用步骤
-
-1. 使原应用程序的`Application`继承`ZeusBaseApplication`。或者将`ZeusBaseApplication`代码拷贝至自己的Application中。具体参考`app`中的`MyApplication`
-2. 使原应用程序的Activity都继承`ZeusBaseActivity`。或者将`ZeusBaseActivity`代码拷贝至自己的Activity中。具体参考app中的`MainActivity`
-3. 内置的插件应放入assets目录中。插件的命名以`PluginConfig.EXP_PLUG_PREFIX`为前缀，以`PluginConfig.PLUGINWEB_APK_SUFF`为结尾。
-4. 内置的插件必须在插件项目的assets中添加`PluginConfig.PLUGINWEB_MAINIFEST_FILE(即plugin.meta)`文件，该文件为插件的配置文件。配置如插件名称(name)，插件版本(version)，插件支持的宿主最低版本(minVersion)，插件的入口类名(mainClass,可不写)。具体参考`testplugin`例子。
-5. `PluginConfig`中是一些可以配置的信息，建议除了内置插件目录以外都不要修改。
-6. 请将当前aapt目录下`aapt.exe`拷贝到sdk目录下的`build-tools`中的正在使用的打包工具，替换原有的aapt.exe，
-    该`aapt.exe`是基于6.0源码编译，包含windows、mac和linux(64位)版本。测试替换23.0.2、23.0.3都没有问题。该`aapt.exe`还集成了资源混淆功能。需要在`build.gradle`中进行配置。
-    如下：`aaptOptions.additionalParameters '--PLUG-resoure-proguard', '--PLUG-resoure-id', '0x7d'`
-    `'--PLUG-resoure-proguard'`表明开启资源混淆，可以不写，不写表示不开启资源混淆，`'--PLUG-resoure-id'`表示设置资源的packageID，`'0x7d'`表示资源`packageID`为`0x7d`开头。
-7. 插件或补丁的资源`packageID`不能与其他插件或者是宿主相同。具体如何设置请参考testplugin中的`build.gradle`。
-8. 将`app`模块中的`buil.gradle`中的`buildJar`方法拷贝到你的`build.gradle`中，这个方法是用来生成插件的sdk，生成sdk的jar文件在`build/libs`路径下，
-    把生成的jar放到插件项目的`sdk-jars`，要把什么类放到sdk中，请对该方法进行修改。具体参考`testplugin`。
-9. 请将插件的`AndroidManifest.xml`中有关的配置添加到宿主中，包括四大组件、权限申请、meta-data等，为了插件的扩展也可以在宿主中预定义一些组件。
-
-> 以下是补丁相关的。补丁与插件类似，只不过补丁把实时加载的功能去掉了。如果项目只运行在android 4.4及以上(art虚拟机，部分低于4.4的手机也可以去掉)，则1忽略，以上就已经支持补丁了，可以直接运行app模块，不需要以下的额外操作。
-
-10. 如果要支持bug fix的补丁功能，请增加`zeusplugin:patch-gradle-plugin:1.0.0`依赖，并将project的`build.gradle`中的带有“`//-----补丁相关-------`”的相关配置移植到你的项目里。如果你的项目只支持android 4.4及以上时(比如内置应用)，不需要按照第当前移植即可支持bug fix补丁功能。具体请查看`testhotfix`模块。
-> 具体插件实现源码可以查看[PatchPluginForZeus](https://github.com/iReaderAndroid/PatchPluginForZeus)
-20. bug fix的补丁需要以`PluginConfig.EXP_PLUG_HOT_FIX_PREFIX`为开头，补丁apk中res文件夹中必须有实际的资源，实在没有就随便写个
-    `com.android.internal.util.Predicate`要保留，故意让所有的类中都包含这个类，这个类系统也定义了，所以dalvik虚拟机生成dex的时候会给当前记一个标记，这样补丁才能实现。
-30. 插件与补丁都需要先安装，插件可以任意时刻进行加载，补丁则下次启动由框架加载，不提供实时加载，实时加载之后你的内存中的对象可能就会乱套了。插件与补丁的安装代码如下：`PluginManager.getPlugin(pluginName).install();`
-40. 如果宿主被混淆请打补丁包时使用-applymapping,具体请搜索，在此不做详细介绍。
-50. 补丁只在宿主的release包才生效，请在release包中进行测试。
-60. 补丁在`android studio`中开启`instant run`时调试是无效的，如果要生效就得更改代码，具体如何更改请查看`PluginManager.java`。
+ ![demo演示](./screenshot/2016-08-21_18_12_48.gif)
 
 ## 支持特性
 
@@ -66,16 +27,20 @@
 5. 不支持插件在xml使用宿主的自定义属性。(支持这个性价比太低，请使用其他替代方法)
 6. 其他还不清楚，还请大家进行测试。
 
+## 文档
+
+使用方法及代码原理见 [Zeus Wiki][wiki]
+
 ## 欢迎加群交流讨论
 
 > QQ群：`558449447`，添加请注明来自`ZeusPlugin`
 >
 > <a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=4464e9ee4fc8b05ee3c4eeb4f4be97469c1cfe46cded6b00f4a887ebebb60916"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Android技术交流分享" title="Android技术交流分享"></a>
 >
->欢迎各位参加测试，该项目会持续维护。
+> 欢迎各位参加测试，该项目会持续维护。
 >
 >
->另：欢迎加入[掌阅](http://www.zhangyue.com/jobs)大家庭，一起研究Android新技术。简历请发送`huangjian@zhangyue.com`,注明应聘方向。
+> 另：欢迎加入[掌阅](http://www.zhangyue.com/jobs)大家庭，一起研究Android新技术。简历请发送`huangjian@zhangyue.com`,注明应聘方向。
 >
 # LICENSE
 
