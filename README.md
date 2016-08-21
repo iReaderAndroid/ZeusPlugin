@@ -29,7 +29,7 @@
 
 ## 文档
 
-使用方法及代码原理见 [Zeus Wiki](https://github.com/iReaderAndroid/ZeusPlugin/wiki]
+使用方法及代码原理见 [Zeus Wiki](https://github.com/iReaderAndroid/ZeusPlugin/wiki)
 
 ## 欢迎加群交流讨论
 
