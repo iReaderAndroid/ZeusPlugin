@@ -24,7 +24,7 @@ class ZeusPluginClassLoader extends ClassLoader {
     protected String[] mLibPaths;
 
     private boolean mInitialized;
-    private final String mRawDexPath;
+    public final String mRawDexPath;
     private String mPathInfos = null;
     final private String mPluginId;
 

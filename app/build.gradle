@@ -44,36 +44,33 @@ patchPlugin{
 //end------------补丁相关，使用gradle插件，如果宿主是只运行于android 4.4及以上可以不添加这些代码------------------
 
 //start----------插件相关的，用来生成sdk-jar的------------------
-task buildJar(dependsOn: ['assembleDebug'], type: Jar) {
+Jar buildJar=task(dependsOn: ['assembleDebug'], "buildJar",type: Jar)
+buildJar.appendix = "master"
+buildJar.baseName = "zeus"
+buildJar.version = "1.0.0"
+buildJar.classifier = "release"
+//后缀名
+buildJar.extension = "jar"
+//最终的 Jar 包名，如果没设置，默认为 [baseName]-[appendix]-[version]-[classifier].[extension]
+buildJar.archiveName = "plugin_sdk.jar"
 
-    appendix = "master"
-    baseName = "zeus"
-    version = "1.0.0"
-    classifier = "release"
-
-    //后缀名
-    extension = "jar"
-    //最终的 Jar 包名，如果没设置，默认为 [baseName]-[appendix]-[version]-[classifier].[extension]
-    archiveName = "plugin_sdk.jar"
-
-    //需打包的资源所在的路径集
-    //宿主的类文件
-    def srcClassDir = [project.findProject(':app').buildDir.absolutePath + "/intermediates/classes/debug"];
-    //插件框架的类文件
-    def srcClassDir1 = [project.findProject(':ZeusPlugin').buildDir.absolutePath + "/intermediates/classes/debug"]
-    //初始化资源路径集
-    from srcClassDir
-    from srcClassDir1
-    //添加进来的都是不打包到sdk中的，去除路径集下部分的资源
-//    exclude "zeus/test/BuildConfig.class"
-//    exclude "zeus/test/BuildConfig\$*.class"
-    //以下是资源id是否打包到sdk中
-//    exclude "**/R.class"
-//    exclude "**/R\$*.class"
-
-    //只导入资源路径集下的部分资源,想添加什么类打包到sdk中就修改此处，默认全部打包
-    include "**/*.class"
-
-    //注: exclude include 支持可变长参数
+//需打包的资源所在的路径集
+def dir=fileTree(project.findProject(':app').buildDir.absolutePath + "/intermediates/exploded-aar/")
+dir.each {
+    if(it.name.endsWith("jar")){
+        buildJar.from project.zipTree(it)
+    }
 }
+////    //添加进来的都是不打包到sdk中的，去除路径集下部分的资源
+//    buildJar.exclude "**/BuildConfig.class"
+//    buildJar.exclude "**/BuildConfig\$*.class"
+////    //以下是资源id是否打包到sdk中
+//    buildJar.exclude "**/R.class"
+//    buildJar.exclude "**/R\$*.class"
+////
+////    //只导入资源路径集下的部分资源,想添加什么类打包到sdk中就修改此处，默认全部打包
+buildJar.include "**/*.class"
+
+//    //注: exclude include 支持可变长参数
+
 //end----------插件相关的，用来生成sdk-jar的------------------

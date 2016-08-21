@@ -1,6 +1,7 @@
 package zeus.plugin;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import static java.lang.System.arraycopy;
 
@@ -95,6 +96,7 @@ class ZeusClassLoader extends ClassLoader {
                 try {
                     //这里只查找插件它自己的apk，不需要查parent，避免多次无用查询，提高性能
                     clazz = classLoader.loadClassByself(className);
+                    Log.e("Zeus",classLoader.mRawDexPath);
                     if (clazz != null) {
                         return clazz;
                     }

@@ -1,4 +1,4 @@
-package zeus.test.hotfix;
+package zeus.testplugin;
 
 import android.os.Bundle;
 import android.view.Gravity;
@@ -7,22 +7,20 @@ import android.widget.TextView;
 import zeus.plugin.ZeusBaseAppCompactActivity;
 
 /**
- * 补丁测试页面
- * @author adison
- * @date 16/8/21
- * @time 上午6:09
+ * Created by adison on 16/8/21.
  */
-public class TestHotFixActivity extends ZeusBaseAppCompactActivity {
+public class AssetPluginActiviy extends ZeusBaseAppCompactActivity {
     @Override
-    protected void onCreate( Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TextView textView = new TextView(this);
+        //内置插件
+        TextView textView=new TextView(this);
         textView.setTextColor(getResources().getColor(android.R.color.black));
         textView.setTextSize(18);
         textView.setGravity(Gravity.CENTER);
-        textView.setText("这是补丁");
+        textView.setText("这是内置插件");
         setContentView(textView);
-        getSupportActionBar().setTitle("补丁页面");
-    }
+        getSupportActionBar().setTitle("内置插件");
 
+    }
 }

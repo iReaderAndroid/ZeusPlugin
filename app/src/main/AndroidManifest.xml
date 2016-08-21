@@ -15,9 +15,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".plugin.TestPluginActivity"></activity>
         <activity android:name=".hotfix.TestHotFixActivity"></activity>
         <!--这是通过预埋activity的方式来加载插件，也可以通过以下面那个骗过android系统-->
         <activity android:name="zeus.testplugin.MainActivity"/>
+        <activity android:name="zeus.testplugin.AssetPluginActiviy"/>
         <!--校验用的activity,为了骗过android的activity存在校验-->
         <activity android:name="com.zeus.ZeusActivityForStandard"/>
     </application>

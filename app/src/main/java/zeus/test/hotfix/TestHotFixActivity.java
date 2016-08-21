@@ -2,18 +2,30 @@ package zeus.test.hotfix;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
+import android.widget.TextView;
 
-import zeus.test.R;
+import zeus.plugin.ZeusBaseAppCompactActivity;
 
 /**
- * Created by adison on 16/8/19.
+ * 补丁测试页面
+ *
+ * @author adison
+ * @date 16/8/21
+ * @time 上午2:04
  */
-public class TestHotFixActivity extends AppCompatActivity {
+public class TestHotFixActivity extends ZeusBaseAppCompactActivity {
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_testhotfix);
-        getSupportActionBar().setTitle("TestHotFix");
+        TextView textView = new TextView(this);
+        textView.setTextColor(getResources().getColor(android.R.color.black));
+        textView.setTextSize(18);
+        textView.setGravity(Gravity.CENTER);
+        textView.setText("这是宿主");
+        setContentView(textView);
+        getSupportActionBar().setTitle("宿主页面");
     }
+
 }

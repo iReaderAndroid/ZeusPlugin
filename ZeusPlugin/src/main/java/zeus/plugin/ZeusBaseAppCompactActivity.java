@@ -1,16 +1,18 @@
-package zeus.test;
+package zeus.plugin;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
-import zeus.plugin.PluginManager;
-import zeus.plugin.ZeusHelper;
-
 /**
- * Created by zy-hyh on 16/8/12.
+ *  AppCompat基类
+ * @author adison
+ * @date 16/8/21
+ * @time 上午12:47
  */
-public class BaseAppCompactActivity extends AppCompatActivity{
+public class ZeusBaseAppCompactActivity extends AppCompatActivity{
 
     //---------------------插件相关的代码-----------------------start
     ZeusHelper helper = new ZeusHelper();
@@ -39,4 +41,9 @@ public class BaseAppCompactActivity extends AppCompatActivity{
         return helper.getTheme(super.getTheme());
     }
     //---------------------------插件相关代码-------------------------end
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 }

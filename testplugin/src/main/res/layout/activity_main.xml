@@ -13,5 +13,5 @@
         android:layout_height="wrap_content"
         android:textColor="@android:color/black"
         android:background="@android:color/white"
-        android:text="这是插件" />
+        android:text="这是内置插件" />
 </RelativeLayout>

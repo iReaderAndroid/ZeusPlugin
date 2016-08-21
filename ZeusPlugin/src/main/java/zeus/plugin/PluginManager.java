@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
-import android.os.Build;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 
@@ -31,7 +30,7 @@ import dalvik.system.DexClassLoader;
 /**
  * 插件管理类，管理插件的初始化、安装、卸载、加载等等
  * 所有的方法和对象都为静态。
- * <p>
+ * <p/>
  * Created by huangjian on 2016/6/21.
  */
 public class PluginManager {
@@ -75,8 +74,8 @@ public class PluginManager {
         mNowResources = mBaseContext.getResources();
         mBaseResources = mNowResources;
         //更改系统的Instrumentation对象，以便创建插件的activity
-        Object mMainThread = PluginUtil.getField(mBaseContext,"mMainThread");
-        PluginUtil.setField(mMainThread,"mInstrumentation",new ZeusInstrumentation());
+        Object mMainThread = PluginUtil.getField(mBaseContext, "mMainThread");
+        PluginUtil.setField(mMainThread, "mInstrumentation", new ZeusInstrumentation());
         //创建插件的相关文件夹目录
         createPath();
         //加载已安装过的插件
@@ -113,14 +112,14 @@ public class PluginManager {
                 installVersion = installedList.get(key);
             }
 
-            ZeusPlugin plugin = getPlugin(key);
+            ZeusPlugin plugin = getLastPlugin(key);
             if (defaultVersion > installVersion) {
                 boolean ret = plugin.installAssetPlugin();
                 //提前将dex文件优化为odex或者opt文件
                 if (ret) {
                     try {
                         new DexClassLoader(PluginUtil.getAPKPath(key), PluginUtil.getDexCacheParentDirectPath(), null, mBaseClassLoader.getParent());
-                    }catch (Throwable e){
+                    } catch (Throwable e) {
                         e.printStackTrace();
                     }
                 }
@@ -313,11 +312,11 @@ public class PluginManager {
      * @return 是否加载成功
      */
     public static boolean loadLastVersionPlugin(String pluingId) {
-        ZeusPlugin plugin = getPlugin(pluingId);
+        ZeusPlugin plugin = getLastPlugin(pluingId);
         PluginManifest meta = plugin.getPluginMeta();
-        double version = -1.0d;
+        int version = -1;
         if (meta != null) {
-            version = Double.valueOf(meta.version);
+            version = Integer.valueOf(meta.version);
         }
         return loadPlugin(pluingId, version);
     }
@@ -329,13 +328,13 @@ public class PluginManager {
      * @param version  要加载插件的版本号
      * @return 是否加载成功
      */
-    public static boolean loadPlugin(String pluginId, double version) {
+    public static boolean loadPlugin(String pluginId, int version) {
         synchronized (mLoadLock) {
             if (getLoadedPlugin() != null && getLoadedPlugin().containsKey(pluginId) && getLoadedPlugin().get(pluginId) >= version) {
                 return true;
             }
             String pluginApkPath = PluginUtil.getAPKPath(pluginId);
-            ZeusPlugin plugin = getPlugin(pluginId);
+            ZeusPlugin plugin = getPlugin(pluginId,version);
             if (!PluginUtil.exists(pluginApkPath)) {
                 if (getDefaultPlugin().containsKey(pluginId)) {
                     if (!plugin.installAssetPlugin()) {
@@ -349,12 +348,12 @@ public class PluginManager {
             }
 
             PluginManifest meta = plugin.getPluginMeta();
-            if (meta == null || Double.valueOf(meta.version) < version) return false;
+            if (meta == null || Integer.valueOf(meta.version) < version) return false;
 
             ClassLoader cl = mNowClassLoader;
-            if(PluginUtil.isHotFix(pluginId)){
+            if (PluginUtil.isHotFix(pluginId)) {
                 loadHotfixPluginClassLoader(pluginId);
-            }else {
+            } else {
                 //如果一个老版本的插件已经被加载了，则需要先移除
                 if (getLoadedPlugin() != null && getLoadedPlugin().containsKey(pluginId)) {
                     if (cl instanceof ZeusClassLoader) {
@@ -448,22 +447,12 @@ public class PluginManager {
         try {
             AssetManager assetManager = AssetManager.class.newInstance();
             Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
-            if(Build.VERSION.SDK_INT<21){
-                addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
-                if (mLoadedPluginList != null && mLoadedPluginList.size() != 0) {
-                    //每个插件的packageID都不能一样
-                    for (String id : mLoadedPluginList.keySet()) {
-                        addAssetPath.invoke(assetManager, PluginUtil.getAPKPath(id));
-                    }
+            addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
+            if (mLoadedPluginList != null && mLoadedPluginList.size() != 0) {
+                //每个插件的packageID都不能一样
+                for (String id : mLoadedPluginList.keySet()) {
+                    addAssetPath.invoke(assetManager, PluginUtil.getAPKPath(id));
                 }
-            }else{
-                if (mLoadedPluginList != null && mLoadedPluginList.size() != 0) {
-                    //每个插件的packageID都不能一样
-                    for (String id : mLoadedPluginList.keySet()) {
-                        addAssetPath.invoke(assetManager, PluginUtil.getAPKPath(id));
-                    }
-                }
-                addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
             }
             //这里提前创建一个resource是因为Resources的构造函数会对AssetManager进行一些变量的初始化
             //还不能创建系统的Resources类，否则中兴系统会出现崩溃问题
@@ -541,7 +530,7 @@ public class PluginManager {
         HashMap<String, Integer> map = getInstalledPlugin();
         if (map != null) {
             for (String key : map.keySet()) {
-                ZeusPlugin plugin = getPlugin(key);
+                ZeusPlugin plugin = getLastPlugin(key);
                 plugin.clearOldPlugin();
             }
         }
@@ -558,7 +547,7 @@ public class PluginManager {
         ClassLoader orgClassLoader = mBaseClassLoader;
         //以下这段是补丁框架为了兼容android studio 2.0版本以上在debug时的instant run功能，在打正式包的时候请删除这段无用代码
         //---start----
-        if(mBaseClassLoader.getParent().getClass().getSimpleName().equals("IncrementalClassLoader")){
+        if (mBaseClassLoader.getParent().getClass().getSimpleName().equals("IncrementalClassLoader")) {
             orgClassLoader = mBaseClassLoader.getParent();
         }
         //---end----
@@ -614,7 +603,7 @@ public class PluginManager {
                 }
                 //热修复补丁,补丁一般只针对某个版本
                 if (PluginUtil.isHotFix(pluginId)) {
-                    PluginManifest manifest = getPlugin(pluginId).getPluginMeta();
+                    PluginManifest manifest = getLastPlugin(pluginId).getPluginMeta();
                     try {
                         int maxVersion = TextUtils.isEmpty(manifest.maxVersion) ? Integer.MAX_VALUE : Integer.valueOf(manifest.maxVersion);
                         int minVersion = TextUtils.isEmpty(manifest.minVersion) ? -1 : Integer.valueOf(manifest.minVersion);
@@ -654,38 +643,68 @@ public class PluginManager {
     }
 
     /**
-     * 获取插件对象，不存在就生成一个
-     *
+     * 获取最新插件对象，不存在就生成一个
      * @param pluginId 插件的名称
-     * @return 插件对象
+     * @return
      */
-    public static ZeusPlugin getPlugin(String pluginId) {
+    public static ZeusPlugin getLastPlugin(String pluginId) {
         ZeusPlugin plugin = null;
+        int version=-1;
+        if(mInstalledPluginList!=null&&mInstalledPluginList.containsKey(pluginId)){
+            version=mInstalledPluginList.get(pluginId);
+        }
         try {
-            plugin = mPluginMap.get(pluginId);
+            plugin = mPluginMap.get(pluginId+"_"+version);
             if (plugin != null) {
                 return plugin;
             }
             if (PluginUtil.iszeusPlugin(pluginId)) {
                 plugin = new ZeusPlugin(pluginId);
             }
-            mPluginMap.put(pluginId, plugin);
+            mPluginMap.put(pluginId+"_"+version, plugin);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return plugin;
     }
 
-    public static void startActivity(Activity activity, Intent intent){
+    /**
+     * 获取插件对象，不存在就生成一个
+     *
+     * @param pluginId 插件的名称
+     * @param version 插件版本，-1表示获取最新的插件
+     * @return 插件对象
+     */
+    public static ZeusPlugin getPlugin(String pluginId,int version) {
+        ZeusPlugin plugin = null;
+        if(version==-1){
+            return getLastPlugin(pluginId);
+        }
+        try {
+            plugin = mPluginMap.get(pluginId+"_"+version);
+            if (plugin != null) {
+                return plugin;
+            }
+            if (PluginUtil.iszeusPlugin(pluginId)) {
+                plugin = new ZeusPlugin(pluginId);
+            }
+            mPluginMap.put(pluginId+"_"+version, plugin);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return plugin;
+    }
+
+    public static void startActivity(Activity activity, Intent intent) {
         ComponentName componentName = intent.getComponent();
-        intent.setClassName(componentName.getPackageName(),PluginConfig.PLUGIN_ACTIVITY_FOR_STANDARD);
+        intent.setClassName(componentName.getPackageName(), PluginConfig.PLUGIN_ACTIVITY_FOR_STANDARD);
         intent.putExtra(PluginConfig.PLUGIN_REAL_ACTIVITY, componentName.getClassName());
         activity.startActivity(intent);
     }
 
-    public static void startActivity(Intent intent){
+    public static void startActivity(Intent intent) {
         ComponentName componentName = intent.getComponent();
-        intent.setClassName(componentName.getPackageName(),PluginConfig.PLUGIN_ACTIVITY_FOR_STANDARD);
+        intent.setClassName(componentName.getPackageName(), PluginConfig.PLUGIN_ACTIVITY_FOR_STANDARD);
         intent.putExtra(PluginConfig.PLUGIN_REAL_ACTIVITY, componentName.getClassName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mBaseContext.startActivity(intent);

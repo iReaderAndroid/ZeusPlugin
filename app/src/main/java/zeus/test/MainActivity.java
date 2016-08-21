@@ -1,49 +1,89 @@
 package zeus.test;
 
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
-import zeus.plugin.PluginConfig;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+
 import zeus.plugin.PluginManager;
+import zeus.plugin.PluginUtil;
+import zeus.plugin.ZeusBaseAppCompactActivity;
+import zeus.plugin.ZeusPlugin;
 import zeus.test.hotfix.TestHotFixActivity;
+import zeus.test.plugin.TestPluginActivity;
 
 
 /**
  * Created by huangjian on 2016/6/21.
  */
-public class MainActivity extends BaseAppCompactActivity {
+public class MainActivity extends ZeusBaseAppCompactActivity {
+
+    private static final String HOTFIX_ID = "zeushotfix_test";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        findViewById(R.id.test_plugin).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PluginManager.loadLastVersionPlugin(PluginConfig.PLUGIN_TEST);
-                try {
-                    Class cl = PluginManager.mNowClassLoader.loadClass(PluginManager.getPlugin(PluginConfig.PLUGIN_TEST).getPluginMeta().mainClass);
-                    Intent intent = new Intent(MainActivity.this, cl);
-                    //这种方式为通过在宿主AndroidManifest.xml中预埋activity实现
-//                    startActivity(intent);
-                    //这种方式为通过欺骗android系统的activity存在性校验的方式实现
-                    PluginManager.startActivity(MainActivity.this,intent);
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+    }
 
-        findViewById(R.id.test_hotfix).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                //第一次启动是宿主，后面就是补丁，这里的测试程序即使插件，也是补丁。
-//                HotfixTest.showText(MainActivity.this);
-                Intent intent=new Intent(MainActivity.this,TestHotFixActivity.class);
-                startActivity(intent);
+    /**
+     * 插件测试
+     *
+     * @param view
+     */
+    public void testPlugin(View view) {
+        Intent intent = new Intent(MainActivity.this, TestPluginActivity.class);
+        startActivity(intent);
+    }
+
+    /**
+     * 补丁测试
+     *
+     * @param view
+     */
+    public void testHotfix(View view) {
+        //第一次启动是宿主，应用补丁后就是补丁。
+        Intent intent = new Intent(MainActivity.this, TestHotFixActivity.class);
+        startActivity(intent);
+    }
+
+    /**
+     * 应用补丁
+     *
+     * @param view
+     */
+    public void applyHotfix(View view) {
+        if(PluginManager.isInstall(HOTFIX_ID)){
+            Toast.makeText(this, "补丁应用已经成功", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        ZeusPlugin zeusPlugin = new ZeusPlugin(HOTFIX_ID);
+        FileOutputStream out = null;
+        InputStream in = null;
+        try {
+            AssetManager am = PluginManager.mBaseResources.getAssets();
+            in = am.open("hotfix_test.apk");
+            PluginUtil.createDirWithFile(PluginUtil.getZipPath(HOTFIX_ID));
+            out = new FileOutputStream(PluginUtil.getZipPath(HOTFIX_ID), false);
+            byte[] temp = new byte[2048];
+            int len;
+            while ((len = in.read(temp)) > 0) {
+                out.write(temp, 0, len);
             }
-        });
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            PluginUtil.close(in);
+            PluginUtil.close(out);
+        }
+        boolean result= zeusPlugin.install();
+        if (result) {
+            Toast.makeText(PluginManager.mBaseContext, "补丁应用成功,下次启动生效", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -52,7 +92,4 @@ public class MainActivity extends BaseAppCompactActivity {
         android.os.Process.killProcess(android.os.Process.myPid());
     }
 
-    public static String testPluginCallHost() {
-        return "宿主";
-    }
 }
