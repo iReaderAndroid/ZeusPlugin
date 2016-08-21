@@ -2,7 +2,7 @@
 
 可能是最精简的插件补丁框架
 
- ![demo演示](./screenshot/2016-08-21_18_12_48.gif)
+ ![demo演示](./screenshot/demo.gif)
 
 ## 支持特性
 
@@ -29,7 +29,7 @@
 
 ## 文档
 
-使用方法及代码原理见 [Zeus Wiki][wiki]
+使用方法及代码原理见 ![Zeus Wiki](https://github.com/iReaderAndroid/ZeusPlugin/wiki]
 
 ## 欢迎加群交流讨论
 
