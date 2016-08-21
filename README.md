@@ -1,6 +1,6 @@
 # ZeusPlugin
 
-可能是最精简的插件补丁框架
+**可能是最精简的插件补丁框架**
 
  ![demo演示](./screenshot/demo.gif)
 
