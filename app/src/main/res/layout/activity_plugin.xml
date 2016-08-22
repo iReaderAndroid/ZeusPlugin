@@ -8,54 +8,25 @@
     android:paddingTop="@dimen/activity_vertical_margin">
 
     <Button
-        android:id="@+id/plugin_asset"
+        android:id="@+id/plugin_test"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="50dp"
         android:background="@android:color/white"
-        android:onClick="pluginAsset"
-        android:text="内置插件"
+        android:text="启动内置插件"
         android:textColor="@android:color/black" />
 
     <Button
         android:id="@+id/plugin_install"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/plugin_asset"
+        android:layout_below="@id/plugin_test"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="50dp"
         android:background="@android:color/white"
-        android:onClick="pluginInstall"
         android:padding="10dp"
-        android:text="动态插件安装"
-        android:textColor="@android:color/black" />
-
-
-    <Button
-        android:id="@+id/plugin_update"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/plugin_install"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
-        android:background="@android:color/white"
-        android:onClick="pluginUpdate"
-        android:padding="10dp"
-        android:text="动态插件升级"
-        android:textColor="@android:color/black" />
-
-    <Button
-        android:id="@+id/plugin_launch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/plugin_update"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
-        android:background="@android:color/white"
-        android:onClick="pluginLaunch"
-        android:padding="10dp"
-        android:text="启动动态插件"
+        android:text="安装Assets下的新版本插件"
         android:textColor="@android:color/black" />
 
 </RelativeLayout>

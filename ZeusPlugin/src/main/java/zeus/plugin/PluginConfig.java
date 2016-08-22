@@ -33,8 +33,8 @@ public class PluginConfig {
     public static final String EXP_PLUG_HOT_FIX_PREFIX = "zeushotfix";                   //如果插件id是以zeushotfix开头，则认为是热修复补丁
     public static HashMap<String, Integer> mDefaultList = new HashMap<>();
 
-    public static final String PLUGIN_TEST = "zeusplugin_asset";                          //插件测试demo
-//    public static final String HOTFIX_TEST = "zeushotfix_test";                          //热修复补丁测试demo
+    public static final String PLUGIN_TEST = "zeusplugin_test";                          //插件测试demo
+    public static final String HOTFIX_TEST = "zeushotfix_test";                          //热修复补丁测试demo
 
     /**
      * apk自带的插件的列表，每次添加内置插件的时候需要添加到这里，格式(pluginName,pluginVersion)

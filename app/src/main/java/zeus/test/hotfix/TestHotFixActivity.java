@@ -23,9 +23,12 @@ public class TestHotFixActivity extends ZeusBaseAppCompactActivity {
         textView.setTextColor(getResources().getColor(android.R.color.black));
         textView.setTextSize(18);
         textView.setGravity(Gravity.CENTER);
-        textView.setText("这是宿主");
+        textView.setText(new TestHotFix().getTestString());
         setContentView(textView);
-        getSupportActionBar().setTitle("宿主页面");
+        getSupportActionBar().setTitle(new TestHotFix().getTestString2());
     }
 
+    public static String getString(){
+        return "页面";
+    }
 }

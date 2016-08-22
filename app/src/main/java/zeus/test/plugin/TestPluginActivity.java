@@ -25,29 +25,59 @@ import zeus.test.R;
  * @time 上午1:09
  */
 public class TestPluginActivity extends ZeusBaseAppCompactActivity {
-    private static final String PLUGIN_ID = "zeusplugin_test";
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_plugin);
         getSupportActionBar().setTitle("插件测试");
+        findViewById(R.id.plugin_test).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startPlugin();
+            }
+        });
+
+        findViewById(R.id.plugin_install).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                installPlugin();
+            }
+        });
     }
 
     /**
-     * 插件安装
+     * 启动插件
      *
-     * @param view
      */
-    public void pluginInstall(View view) {
-        ZeusPlugin zeusPlugin = PluginManager.getPlugin(PLUGIN_ID);
+    public void startPlugin() {
+        PluginManager.loadLastVersionPlugin(PluginConfig.PLUGIN_TEST);
+        try {
+            Class cl = PluginManager.mNowClassLoader.loadClass(PluginManager.getPlugin(PluginConfig.PLUGIN_TEST).getPluginMeta().mainClass);
+            Intent intent = new Intent(this, cl);
+            //这种方式为通过在宿主AndroidManifest.xml中预埋activity实现
+//            startActivity(intent);
+            //这种方式为通过欺骗android系统的activity存在性校验的方式实现
+            PluginManager.startActivity(this,intent);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 安装assets中高版本插件plugin_test_version2.apk
+     * 先拷贝到PluginUtil.getZipPath(PluginConfig.PLUGIN_TEST)
+     * 然后调用install()安装。
+     *
+     */
+    public void installPlugin() {
+        ZeusPlugin zeusPlugin = PluginManager.getPlugin(PluginConfig.PLUGIN_TEST);
         FileOutputStream out = null;
         InputStream in = null;
         try {
             AssetManager am = PluginManager.mBaseResources.getAssets();
-            in = am.open("plugin_test.apk");
-            PluginUtil.createDirWithFile(PluginUtil.getZipPath(PLUGIN_ID));
-            out = new FileOutputStream(PluginUtil.getZipPath(PLUGIN_ID), false);
+            in = am.open("zeusplugin_test_version2.apk");
+            PluginUtil.createDirWithFile(PluginUtil.getZipPath(PluginConfig.PLUGIN_TEST));
+            out = new FileOutputStream(PluginUtil.getZipPath(PluginConfig.PLUGIN_TEST), false);
             byte[] temp = new byte[2048];
             int len;
             while ((len = in.read(temp)) > 0) {
@@ -62,79 +92,9 @@ public class TestPluginActivity extends ZeusBaseAppCompactActivity {
 
         boolean installed=zeusPlugin.install();
         if(installed){
-            Toast.makeText(PluginManager.mBaseContext,"插件安装成功",Toast.LENGTH_SHORT).show();
+            Toast.makeText(PluginManager.mBaseContext,"高版本插件安装成功",Toast.LENGTH_SHORT).show();
         }
     }
 
-    /**
-     * 内置插件
-     *
-     * @param view
-     */
-    public void pluginAsset(View view) {
-        PluginManager.loadLastVersionPlugin(PluginConfig.PLUGIN_TEST);
-        try {
-            Class cl = PluginManager.mNowClassLoader.loadClass(PluginManager.getPlugin(PluginConfig.PLUGIN_TEST).getPluginMeta().mainClass);
-            Intent intent = new Intent(this, cl);
-            //这种方式为通过在宿主AndroidManifest.xml中预埋activity实现
-            startActivity(intent);
-            //这种方式为通过欺骗android系统的activity存在性校验的方式实现
-//            PluginManager.startActivity(this,intent);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
 
-    /**
-     * 插件启动
-     *
-     * @param view
-     */
-    public void pluginLaunch(View view) {
-        PluginManager.loadLastVersionPlugin(PLUGIN_ID);
-        Class cl = null;
-        try {
-            cl = PluginManager.mNowClassLoader.loadClass(PluginManager.getPlugin(PLUGIN_ID).getPluginMeta().mainClass);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (cl != null) {
-            Intent intent = new Intent(TestPluginActivity.this, cl);
-            startActivity(intent);
-        }else{
-            Toast.makeText(PluginManager.mBaseContext,"请先安装插件",Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     * 插件升级
-     *
-     * @param view
-     */
-    public void pluginUpdate(View view) {
-        ZeusPlugin zeusPlugin =PluginManager.getPlugin(PLUGIN_ID);
-        FileOutputStream out = null;
-        InputStream in = null;
-        try {
-            AssetManager am = PluginManager.mBaseResources.getAssets();
-            in = am.open("plugin_test_update.apk");
-            PluginUtil.createDirWithFile(PluginUtil.getZipPath(PLUGIN_ID));
-            out = new FileOutputStream(PluginUtil.getZipPath(PLUGIN_ID), false);
-            byte[] temp = new byte[2048];
-            int len;
-            while ((len = in.read(temp)) > 0) {
-                out.write(temp, 0, len);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            PluginUtil.close(in);
-            PluginUtil.close(out);
-        }
-
-       boolean installed= zeusPlugin.install();
-        if(installed){
-            Toast.makeText(PluginManager.mBaseContext,"插件升级成功",Toast.LENGTH_SHORT).show();
-        }
-    }
 }

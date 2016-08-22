@@ -61,6 +61,9 @@ dir.each {
         buildJar.from project.zipTree(it)
     }
 }
+def srcClassDir = [project.findProject(':app').buildDir.absolutePath + "/intermediates/classes/debug"];
+buildJar.from srcClassDir
+
 ////    //添加进来的都是不打包到sdk中的，去除路径集下部分的资源
 //    buildJar.exclude "**/BuildConfig.class"
 //    buildJar.exclude "**/BuildConfig\$*.class"

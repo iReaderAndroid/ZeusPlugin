@@ -9,6 +9,7 @@ import android.widget.Toast;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
+import zeus.plugin.PluginConfig;
 import zeus.plugin.PluginManager;
 import zeus.plugin.PluginUtil;
 import zeus.plugin.ZeusBaseAppCompactActivity;
@@ -21,8 +22,6 @@ import zeus.test.plugin.TestPluginActivity;
  * Created by huangjian on 2016/6/21.
  */
 public class MainActivity extends ZeusBaseAppCompactActivity {
-
-    private static final String HOTFIX_ID = "zeushotfix_test";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,18 +56,18 @@ public class MainActivity extends ZeusBaseAppCompactActivity {
      * @param view
      */
     public void applyHotfix(View view) {
-        if(PluginManager.isInstall(HOTFIX_ID)){
-            Toast.makeText(PluginManager.mBaseContext, "补丁应用已经成功", Toast.LENGTH_SHORT).show();
+        if(PluginManager.isInstall(PluginConfig.HOTFIX_TEST)){
+            Toast.makeText(PluginManager.mBaseContext, "补丁已经被安装,不用再次安装", Toast.LENGTH_SHORT).show();
             return;
         }
-        ZeusPlugin zeusPlugin = PluginManager.getPlugin(HOTFIX_ID);
+        ZeusPlugin zeusPlugin = PluginManager.getPlugin(PluginConfig.HOTFIX_TEST);
         FileOutputStream out = null;
         InputStream in = null;
         try {
             AssetManager am = PluginManager.mBaseResources.getAssets();
-            in = am.open("hotfix_test.apk");
-            PluginUtil.createDirWithFile(PluginUtil.getZipPath(HOTFIX_ID));
-            out = new FileOutputStream(PluginUtil.getZipPath(HOTFIX_ID), false);
+            in = am.open("zeushotfix_test.apk");
+            PluginUtil.createDirWithFile(PluginUtil.getZipPath(PluginConfig.HOTFIX_TEST));
+            out = new FileOutputStream(PluginUtil.getZipPath(PluginConfig.HOTFIX_TEST), false);
             byte[] temp = new byte[2048];
             int len;
             while ((len = in.read(temp)) > 0) {
@@ -82,7 +81,7 @@ public class MainActivity extends ZeusBaseAppCompactActivity {
         }
         boolean result= zeusPlugin.install();
         if (result) {
-            Toast.makeText(PluginManager.mBaseContext, "补丁应用成功,下次启动生效", Toast.LENGTH_SHORT).show();
+            Toast.makeText(PluginManager.mBaseContext, "补丁安装成功,下次启动生效", Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -14,23 +14,17 @@ public class MainActivity extends ZeusBaseAppCompactActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//       // 动态插件1
-//        TextView textView=new TextView(this);
-//        textView.setTextColor(getResources().getColor(android.R.color.black));
-//        textView.setTextSize(18);
-//        textView.setGravity(Gravity.CENTER);
-//        textView.setText("这是动态插件");
-//        setContentView(textView);
-//        getSupportActionBar().setTitle("动态插件");
+        String version = "1";
+//        String version = "2";
 
-        //动态插件2
         TextView textView=new TextView(this);
         textView.setTextColor(getResources().getColor(android.R.color.black));
         textView.setTextSize(18);
         textView.setGravity(Gravity.CENTER);
-        textView.setText("这是动态插件升级");
         setContentView(textView);
-        getSupportActionBar().setTitle("动态插件升级");
 
+        //内置插件zeusplugin_test, 记得assets下的zeusplugin.meta里的version也得改为对应的版本
+        textView.setText("这是插件,版本为" + version);
+        getSupportActionBar().setTitle("插件,版本为" + version);
     }
 }
