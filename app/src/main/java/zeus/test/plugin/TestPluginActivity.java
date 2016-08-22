@@ -40,7 +40,7 @@ public class TestPluginActivity extends ZeusBaseAppCompactActivity {
      * @param view
      */
     public void pluginInstall(View view) {
-        ZeusPlugin zeusPlugin = new ZeusPlugin(PLUGIN_ID);
+        ZeusPlugin zeusPlugin = PluginManager.getPlugin(PLUGIN_ID);
         FileOutputStream out = null;
         InputStream in = null;
         try {
@@ -74,7 +74,7 @@ public class TestPluginActivity extends ZeusBaseAppCompactActivity {
     public void pluginAsset(View view) {
         PluginManager.loadLastVersionPlugin(PluginConfig.PLUGIN_TEST);
         try {
-            Class cl = PluginManager.mNowClassLoader.loadClass(PluginManager.getLastPlugin(PluginConfig.PLUGIN_TEST).getPluginMeta().mainClass);
+            Class cl = PluginManager.mNowClassLoader.loadClass(PluginManager.getPlugin(PluginConfig.PLUGIN_TEST).getPluginMeta().mainClass);
             Intent intent = new Intent(this, cl);
             //这种方式为通过在宿主AndroidManifest.xml中预埋activity实现
             startActivity(intent);
@@ -94,7 +94,7 @@ public class TestPluginActivity extends ZeusBaseAppCompactActivity {
         PluginManager.loadLastVersionPlugin(PLUGIN_ID);
         Class cl = null;
         try {
-            cl = PluginManager.mNowClassLoader.loadClass(PluginManager.getLastPlugin(PLUGIN_ID).getPluginMeta().mainClass);
+            cl = PluginManager.mNowClassLoader.loadClass(PluginManager.getPlugin(PLUGIN_ID).getPluginMeta().mainClass);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -112,7 +112,7 @@ public class TestPluginActivity extends ZeusBaseAppCompactActivity {
      * @param view
      */
     public void pluginUpdate(View view) {
-        ZeusPlugin zeusPlugin = new ZeusPlugin(PLUGIN_ID);
+        ZeusPlugin zeusPlugin =PluginManager.getPlugin(PLUGIN_ID);
         FileOutputStream out = null;
         InputStream in = null;
         try {

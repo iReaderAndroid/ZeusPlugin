@@ -20,7 +20,7 @@ public class ZeusPlugin {
     private boolean isInstalling = false;
     private boolean isAssetInstalling = false;
 
-    public ZeusPlugin(String pluginId) {
+    protected ZeusPlugin(String pluginId) {
         mPluginId = pluginId;
     }
 

@@ -14,7 +14,7 @@ public class MainActivity extends ZeusBaseAppCompactActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //动态插件1
+//       // 动态插件1
 //        TextView textView=new TextView(this);
 //        textView.setTextColor(getResources().getColor(android.R.color.black));
 //        textView.setTextSize(18);

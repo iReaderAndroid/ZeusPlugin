@@ -112,7 +112,7 @@ public class PluginManager {
                 installVersion = installedList.get(key);
             }
 
-            ZeusPlugin plugin = getLastPlugin(key);
+            ZeusPlugin plugin = getPlugin(key);
             if (defaultVersion > installVersion) {
                 boolean ret = plugin.installAssetPlugin();
                 //提前将dex文件优化为odex或者opt文件
@@ -312,7 +312,7 @@ public class PluginManager {
      * @return 是否加载成功
      */
     public static boolean loadLastVersionPlugin(String pluingId) {
-        ZeusPlugin plugin = getLastPlugin(pluingId);
+        ZeusPlugin plugin = getPlugin(pluingId);
         PluginManifest meta = plugin.getPluginMeta();
         int version = -1;
         if (meta != null) {
@@ -334,7 +334,7 @@ public class PluginManager {
                 return true;
             }
             String pluginApkPath = PluginUtil.getAPKPath(pluginId);
-            ZeusPlugin plugin = getPlugin(pluginId,version);
+            ZeusPlugin plugin = getPlugin(pluginId);
             if (!PluginUtil.exists(pluginApkPath)) {
                 if (getDefaultPlugin().containsKey(pluginId)) {
                     if (!plugin.installAssetPlugin()) {
@@ -530,7 +530,7 @@ public class PluginManager {
         HashMap<String, Integer> map = getInstalledPlugin();
         if (map != null) {
             for (String key : map.keySet()) {
-                ZeusPlugin plugin = getLastPlugin(key);
+                ZeusPlugin plugin = getPlugin(key);
                 plugin.clearOldPlugin();
             }
         }
@@ -603,7 +603,7 @@ public class PluginManager {
                 }
                 //热修复补丁,补丁一般只针对某个版本
                 if (PluginUtil.isHotFix(pluginId)) {
-                    PluginManifest manifest = getLastPlugin(pluginId).getPluginMeta();
+                    PluginManifest manifest = getPlugin(pluginId).getPluginMeta();
                     try {
                         int maxVersion = TextUtils.isEmpty(manifest.maxVersion) ? Integer.MAX_VALUE : Integer.valueOf(manifest.maxVersion);
                         int minVersion = TextUtils.isEmpty(manifest.minVersion) ? -1 : Integer.valueOf(manifest.minVersion);
@@ -647,53 +647,23 @@ public class PluginManager {
      * @param pluginId 插件的名称
      * @return
      */
-    public static ZeusPlugin getLastPlugin(String pluginId) {
+    public static ZeusPlugin getPlugin(String pluginId) {
         ZeusPlugin plugin = null;
-        int version=-1;
-        if(mInstalledPluginList!=null&&mInstalledPluginList.containsKey(pluginId)){
-            version=mInstalledPluginList.get(pluginId);
-        }
         try {
-            plugin = mPluginMap.get(pluginId+"_"+version);
+            plugin = mPluginMap.get(pluginId);
             if (plugin != null) {
                 return plugin;
             }
             if (PluginUtil.iszeusPlugin(pluginId)) {
                 plugin = new ZeusPlugin(pluginId);
             }
-            mPluginMap.put(pluginId+"_"+version, plugin);
+            mPluginMap.put(pluginId, plugin);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return plugin;
     }
 
-    /**
-     * 获取插件对象，不存在就生成一个
-     *
-     * @param pluginId 插件的名称
-     * @param version 插件版本，-1表示获取最新的插件
-     * @return 插件对象
-     */
-    public static ZeusPlugin getPlugin(String pluginId,int version) {
-        ZeusPlugin plugin = null;
-        if(version==-1){
-            return getLastPlugin(pluginId);
-        }
-        try {
-            plugin = mPluginMap.get(pluginId+"_"+version);
-            if (plugin != null) {
-                return plugin;
-            }
-            if (PluginUtil.iszeusPlugin(pluginId)) {
-                plugin = new ZeusPlugin(pluginId);
-            }
-            mPluginMap.put(pluginId+"_"+version, plugin);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return plugin;
-    }
 
     public static void startActivity(Activity activity, Intent intent) {
         ComponentName componentName = intent.getComponent();
