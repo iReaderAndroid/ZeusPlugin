@@ -58,7 +58,7 @@ public class MainActivity extends ZeusBaseAppCompactActivity {
      */
     public void applyHotfix(View view) {
         if(PluginManager.isInstall(HOTFIX_ID)){
-            Toast.makeText(this, "补丁应用已经成功", Toast.LENGTH_SHORT).show();
+            Toast.makeText(PluginManager.mBaseContext, "补丁应用已经成功", Toast.LENGTH_SHORT).show();
             return;
         }
         ZeusPlugin zeusPlugin = PluginManager.getPlugin(HOTFIX_ID);
