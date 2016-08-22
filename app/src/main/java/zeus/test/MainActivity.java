@@ -61,7 +61,7 @@ public class MainActivity extends ZeusBaseAppCompactActivity {
             Toast.makeText(this, "补丁应用已经成功", Toast.LENGTH_SHORT).show();
             return;
         }
-        ZeusPlugin zeusPlugin = new ZeusPlugin(HOTFIX_ID);
+        ZeusPlugin zeusPlugin = PluginManager.getPlugin(HOTFIX_ID);
         FileOutputStream out = null;
         InputStream in = null;
         try {
