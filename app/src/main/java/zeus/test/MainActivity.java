@@ -57,7 +57,7 @@ public class MainActivity extends ZeusBaseAppCompactActivity {
      */
     public void applyHotfix(View view) {
         if(PluginManager.isInstall(PluginConfig.HOTFIX_TEST)){
-            Toast.makeText(PluginManager.mBaseContext, "补丁已经被安装,不用再次安装", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "补丁"+PluginConfig.HOTFIX_TEST+"已经被安装,不用再次安装", Toast.LENGTH_SHORT).show();
             return;
         }
         ZeusPlugin zeusPlugin = PluginManager.getPlugin(PluginConfig.HOTFIX_TEST);
@@ -81,7 +81,7 @@ public class MainActivity extends ZeusBaseAppCompactActivity {
         }
         boolean result= zeusPlugin.install();
         if (result) {
-            Toast.makeText(PluginManager.mBaseContext, "补丁安装成功,下次启动生效", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "补丁"+PluginConfig.HOTFIX_TEST+"安装成功,下次启动生效", Toast.LENGTH_SHORT).show();
         }
     }
 

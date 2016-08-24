@@ -27,7 +27,7 @@
         android:layout_marginTop="50dp"
         android:background="@android:color/white"
         android:onClick="applyHotfix"
-        android:text="应用补丁"
+        android:text="应用assets/zeushotfix_test.apk补丁"
         android:textColor="@android:color/black" />
 
     <Button
