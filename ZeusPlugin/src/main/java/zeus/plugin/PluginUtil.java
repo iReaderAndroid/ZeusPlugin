@@ -18,7 +18,7 @@ import java.util.zip.ZipInputStream;
 
 /**
  * 插件的工具类，用到的工具静态方法在这里，包括zip、file、路径配置等等
- * <p>
+ * <p/>
  * Created by huangjian on 2016/6/21.
  */
 public class PluginUtil {
@@ -125,6 +125,51 @@ public class PluginUtil {
      */
     public static boolean isPlugin(String pluginId) {
         return !TextUtils.isEmpty(pluginId) && pluginId.startsWith(PluginConfig.EXP_PLUG_PREFIX);
+    }
+
+    /**
+     * 是否是不带so文件的插件
+     *
+     * @param pluginId 插件id
+     * @return 是否是插件或者补丁
+     */
+    public static boolean isPluginWithoutSoFile(String pluginId) {
+        return !TextUtils.isEmpty(pluginId) && pluginId.startsWith(PluginConfig.EXP_PLUG_NO_SO_PREFIX);
+    }
+
+    /**
+     * 是否是不带so文件的补丁
+     *
+     * @param pluginId 插件id
+     * @return 是否是不带so文件的补丁
+     */
+    public static boolean isHotfixWithoutSoFile(String pluginId) {
+        return !TextUtils.isEmpty(pluginId) &&
+                (pluginId.startsWith(PluginConfig.EXP_PLUG_HOT_FIX_NO_SO_PREFIX) ||
+                        pluginId.startsWith(PluginConfig.EXP_PLUG_HOT_FIX_NO_RES_SO_PREFIX));
+    }
+
+    /**
+     * 是否是不带资源文件的补丁
+     *
+     * @param pluginId 插件id
+     * @return ture表明是不带资源文件的补丁
+     */
+    public static boolean isHotfixWithoutResFile(String pluginId) {
+        return !TextUtils.isEmpty(pluginId) &&
+                (pluginId.startsWith(PluginConfig.EXP_PLUG_HOT_FIX_NO_RES_PREFIX) ||
+                        pluginId.startsWith(PluginConfig.EXP_PLUG_HOT_FIX_NO_RES_SO_PREFIX));
+    }
+
+
+    /**
+     * 是否是不带so和资源文件的补丁
+     *
+     * @param pluginId 插件id
+     * @return ture表明是不带so和资源文件的补丁
+     */
+    public static boolean isHotfixWithoutSoAndResFile(String pluginId) {
+        return !TextUtils.isEmpty(pluginId) && pluginId.startsWith(PluginConfig.EXP_PLUG_HOT_FIX_NO_RES_SO_PREFIX);
     }
 
     /**

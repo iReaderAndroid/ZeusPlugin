@@ -378,7 +378,9 @@ public class PluginManager {
                 }
                 putLoadedPlugin(pluginId, Integer.valueOf(meta.version));
             }
-            reloadInstalledPluginResources();
+            if (!PluginUtil.isHotfixWithoutResFile(pluginId)) {
+                reloadInstalledPluginResources();
+            }
         }
         return true;
     }
@@ -451,7 +453,10 @@ public class PluginManager {
             if (mLoadedPluginList != null && mLoadedPluginList.size() != 0) {
                 //每个插件的packageID都不能一样
                 for (String id : mLoadedPluginList.keySet()) {
-                    addAssetPath.invoke(assetManager, PluginUtil.getAPKPath(id));
+                    //只有带有资源的补丁才会执行添加到assetManager中
+                    if (!PluginUtil.isHotfixWithoutResFile(id)) {
+                        addAssetPath.invoke(assetManager, PluginUtil.getAPKPath(id));
+                    }
                 }
             }
             //这里提前创建一个resource是因为Resources的构造函数会对AssetManager进行一些变量的初始化
@@ -459,7 +464,6 @@ public class PluginManager {
             PluginResources newResources = new PluginResources(assetManager,
                     mBaseContext.getResources().getDisplayMetrics(),
                     mBaseContext.getResources().getConfiguration());
-
 
             PluginUtil.setField(mBaseContext, "mResources", newResources);
             //这是最主要的需要替换的，如果不支持插件运行时更新，只留这一个就可以了
@@ -476,7 +480,6 @@ public class PluginManager {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-
     }
 
     /**
@@ -644,6 +647,7 @@ public class PluginManager {
 
     /**
      * 获取最新插件对象，不存在就生成一个
+     *
      * @param pluginId 插件的名称
      * @return
      */
