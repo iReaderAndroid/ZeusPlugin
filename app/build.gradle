@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 //start----------补丁相关，使用gradle插件，如果宿主是只运行于android 4.4及以上可以不添加这些代码------------------
 apply plugin: 'patch-gradle-plugin'
 //end------------补丁相关，使用gradle插件，如果宿主是只运行于android 4.4及以上可以不添加这些代码------------------
-
+apply plugin: 'jar-gradle-plugin'//生成jar包插件
 android {
     compileSdkVersion 23
     buildToolsVersion '23.0.2'
@@ -44,36 +44,27 @@ patchPlugin{
 //end------------补丁相关，使用gradle插件，如果宿主是只运行于android 4.4及以上可以不添加这些代码------------------
 
 //start----------插件相关的，用来生成sdk-jar的------------------
-Jar buildJar=task(dependsOn: ['assembleDebug'], "buildJar",type: Jar)
-buildJar.appendix = "master"
-buildJar.baseName = "zeus"
-buildJar.version = "1.0.0"
-buildJar.classifier = "release"
-//后缀名
-buildJar.extension = "jar"
-//最终的 Jar 包名，如果没设置，默认为 [baseName]-[appendix]-[version]-[classifier].[extension]
-buildJar.archiveName = "plugin_sdk.jar"
-
-//需打包的资源所在的路径集
-def dir=fileTree(project.findProject(':app').buildDir.absolutePath + "/intermediates/exploded-aar/")
-dir.each {
-    if(it.name.endsWith("jar")){
-        buildJar.from project.zipTree(it)
-    }
+//具体使用参见https://github.com/adisonhyh/buildJar
+BuildJar{
+    //输出目录
+    outputFileDir= project.buildDir.path+"/jar"
+    //输出原始jar包名
+    outputFileName="sdk.jar"
+    //输出混淆jar包名
+    outputProguardFileName="sdk_proguard.jar"
+    //混淆配置
+    proguardConfigFile="proguard-rules.pro"
+    //是否需要默认的混淆配置proguard-android.txt
+    needDefaultProguard=true
+//    applyMappingFile="originMapping/mapping.txt"
+    //需要输出jar的包名列表,当此参数为空时，则默认全项目输出,支持多包,如 includePackage=['com/adison/testjarplugin/include','com/adison/testjarplugin/include1'...]
+//    includePackage=['com/adison/testjarplugin/include']
+//    //不需要输出jar的jar包列表,如['baidu.jar','baidu1.jar'...]
+//    excludeJar=[]
+//    //不需要输出jar的类名列表,如['baidu.calss','baidu1.class'...]
+//    excludeClass=['com/adison/testjarplugin/TestExcude.class']
+//    //不需要输出jar的包名列表,如 excludePackage=['com/adison/testjarplugin/exclude','com/adison/testjarplugin/exclude1'...]
+//    excludePackage=['com/adison/testjarplugin/exclude']
 }
-def srcClassDir = [project.findProject(':app').buildDir.absolutePath + "/intermediates/classes/debug"];
-buildJar.from srcClassDir
-
-////    //添加进来的都是不打包到sdk中的，去除路径集下部分的资源
-//    buildJar.exclude "**/BuildConfig.class"
-//    buildJar.exclude "**/BuildConfig\$*.class"
-////    //以下是资源id是否打包到sdk中
-//    buildJar.exclude "**/R.class"
-//    buildJar.exclude "**/R\$*.class"
-////
-////    //只导入资源路径集下的部分资源,想添加什么类打包到sdk中就修改此处，默认全部打包
-buildJar.include "**/*.class"
-
-//    //注: exclude include 支持可变长参数
 
 //end----------插件相关的，用来生成sdk-jar的------------------

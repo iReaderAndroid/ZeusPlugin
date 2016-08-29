@@ -10,6 +10,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:2.1.2'
         //补丁插件
         classpath 'zeusplugin:patch-gradle-plugin:1.0.0'
+        classpath 'com.adison.gradleplugin:jar:1.0.1'
     }
 }
 
