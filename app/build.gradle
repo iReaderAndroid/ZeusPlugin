@@ -44,7 +44,7 @@ patchPlugin{
 //end------------补丁相关，使用gradle插件，如果宿主是只运行于android 4.4及以上可以不添加这些代码------------------
 
 //start----------插件相关的，用来生成sdk-jar的------------------
-//具体使用参见https://github.com/adisonhyh/buildJar
+//具体使用参见https://github.com/iReaderAndroid/buildJar
 BuildJar{
     //输出目录
     outputFileDir= project.buildDir.path+"/jar"

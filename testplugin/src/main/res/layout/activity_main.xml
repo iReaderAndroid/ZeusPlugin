@@ -7,11 +7,9 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin">
 
-    <zeus.test.TestTextView
+    <TextView
         android:id="@+id/action0"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@android:color/black"
-        android:background="@android:color/white"
-        android:text="这是内置插件" />
+        android:textColor="@android:color/black" />
 </RelativeLayout>

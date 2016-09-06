@@ -8,9 +8,17 @@ buildscript {
     dependencies {
         //设置为2.0以上可能会打开instant run,那么补丁要想调试需要进行代码上的更改，具体请看PluginManager.java中的loadHotfixPluginClassLoader()
         classpath 'com.android.tools.build:gradle:2.1.2'
-        //补丁插件
+
+        //start-----补丁插件--------
+        //这里是使用远程依赖的gradle插件来执行插庄过程，源码在https://github.com/iReaderAndroid/PatchPluginForZeus
         classpath 'zeusplugin:patch-gradle-plugin:1.0.0'
+        // end------补丁插件---------
+
+        //start----------插件相关的，用来生成sdk-jar的------------------
+        //这是使用buildJar任务的远程依赖，用来打sdk的jar用的，源码在https://github.com/iReaderAndroid/buildJar
         classpath 'com.adison.gradleplugin:jar:1.0.1'
+        // end----------插件相关的，用来生成sdk-jar的------------------
+
     }
 }
 

@@ -6,6 +6,7 @@ import android.view.Gravity;
 import android.widget.TextView;
 
 import zeus.plugin.ZeusBaseAppCompactActivity;
+import zeus.test.R;
 
 /**
  * 补丁测试页面
@@ -19,7 +20,8 @@ public class TestHotFixActivity extends ZeusBaseAppCompactActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TextView textView = new TextView(this);
+        setContentView(R.layout.activity_testhotfix);
+        TextView textView = (TextView) findViewById(R.id.text_view);
         textView.setTextColor(getResources().getColor(android.R.color.black));
         textView.setTextSize(18);
         textView.setGravity(Gravity.CENTER);

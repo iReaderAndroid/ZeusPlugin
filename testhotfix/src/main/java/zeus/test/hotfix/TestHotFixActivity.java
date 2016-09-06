@@ -5,6 +5,7 @@ import android.view.Gravity;
 import android.widget.TextView;
 
 import zeus.plugin.ZeusBaseAppCompactActivity;
+import zeus.test.R;
 
 /**
  * 补丁测试页面
@@ -18,13 +19,13 @@ public class TestHotFixActivity extends ZeusBaseAppCompactActivity {
     @Override
     protected void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TextView textView = new TextView(this);
+        setContentView(R.layout.activity_main);
+        TextView textView = (TextView) findViewById(R.id.text_view);
         //如果是红色说明走的是补丁类
+        //activity_main中textSize也变大了，是25dp
         textView.setTextColor(getResources().getColor(android.R.color.holo_red_light));
-        textView.setTextSize(18);
         textView.setGravity(Gravity.CENTER);
         textView.setText(new TestHotFix().getTestString());
-        setContentView(textView);
         getSupportActionBar().setTitle(new TestHotFix().getTestString2());
     }
 
