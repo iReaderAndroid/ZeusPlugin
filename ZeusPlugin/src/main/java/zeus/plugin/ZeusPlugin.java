@@ -184,7 +184,7 @@ public class ZeusPlugin {
         PluginUtil.createDir(insideLibPath);
         String apkLibPath = PluginUtil.getLibFile(cpuType);
         //首先将apk中libs文件夹下的一级so文件拷贝
-        return PluginUtil.unzipFile(getAPKPath(mPluginId), insideLibPath, apkLibPath, installedPathInfo);
+        return PluginUtil.unzipFile(getAPKPath(mPluginId), insideLibPath, apkLibPath);
     }
 
     /**

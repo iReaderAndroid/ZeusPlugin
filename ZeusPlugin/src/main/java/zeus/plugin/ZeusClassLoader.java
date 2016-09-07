@@ -28,9 +28,8 @@ class ZeusClassLoader extends ClassLoader {
      * @param pluginId 插件名称
      * @param dexPath dex文件路径
      * @param libPath so文件夹路径
-     * @param installedPathInfo 安装的随机路径信息
      */
-    protected void addAPKPath(String pluginId, String dexPath, String libPath, String installedPathInfo) {
+    protected void addAPKPath(String pluginId, String dexPath, String libPath) {
         if (mClassLoader == null) {
             mClassLoader = new ZeusPluginClassLoader[1];
         } else {
@@ -42,7 +41,6 @@ class ZeusClassLoader extends ClassLoader {
         mClassLoader[mClassLoader.length - 1] = new ZeusPluginClassLoader(pluginId, dexPath,
                 PluginUtil.getDexCacheParentDirectPath(),
                 libPath,
-                installedPathInfo,
                 getParent());
     }
 

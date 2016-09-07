@@ -19,19 +19,13 @@ import static java.lang.System.arraycopy;
  * Created by huangjian on 2016/6/21.
  */
 class ZeusHotfixClassLoader extends ZeusPluginClassLoader {
-
-    private ArrayList<String> mPathInfoList = null;
-
     private ClassLoader mChild = null;
     private Method findClassMethod = null;
     private Method findLoadedClassMethod = null;
 
-    public ZeusHotfixClassLoader(String dexPath, String dexOutputDir, String libPath, ArrayList<String> pathInfos,
+    public ZeusHotfixClassLoader(String dexPath, String dexOutputDir, String libPath,
                                     ClassLoader parent) {
-        super(null, dexPath, dexOutputDir, libPath, null, parent);
-        if (dexPath == null || dexOutputDir == null)
-            throw new NullPointerException();
-        mPathInfoList = pathInfos;
+        super(null, dexPath, dexOutputDir, libPath,parent);
     }
 
     protected void setOrgAPKClassLoader(ClassLoader child) {
@@ -40,7 +34,7 @@ class ZeusHotfixClassLoader extends ZeusPluginClassLoader {
         findClassMethod = PluginUtil.getMethod(mChild.getClass(), "findClass", String.class);
     }
 
-    protected void addAPKPath(String dexPath, String libPath, String pathInfo) {
+    protected void addAPKPath(String dexPath, String libPath) {
         if(mDexs == null){
             ensureInit();
         }
@@ -85,7 +79,6 @@ class ZeusHotfixClassLoader extends ZeusPluginClassLoader {
             String outputName =
                     generateOutputName(dexPath, mDexOutputPath);
             mDexs[oldLength] = DexFile.loadDex(dexPath, outputName, 0);
-            mPathInfoList.add(pathInfo);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -132,30 +125,6 @@ class ZeusHotfixClassLoader extends ZeusPluginClassLoader {
             throw new ClassNotFoundException(className + " in loader " + this);
         }
         return clazz;
-    }
-
-    @Override
-    public String findLibrary(String libname) {
-        ensureInit();
-
-        String fileName = System.mapLibraryName(libname);
-        for (int i = 0; i < mLibPaths.length; i++) {
-            String pathName = mLibPaths[i] + fileName;
-            File test = new File(pathName);
-
-            if (test.exists()) {
-                return pathName;
-            } else {
-                if (mPathInfoList == null || i > mPathInfoList.size() - 1) {
-                    return null;
-                }
-                String fileNameForNewPlug = PluginUtil.getFinalSoName(pathName, mPathInfoList.get(i));
-                if (PluginUtil.exists(fileNameForNewPlug)) {
-                    return fileNameForNewPlug;
-                }
-            }
-        }
-        return null;
     }
 }
 

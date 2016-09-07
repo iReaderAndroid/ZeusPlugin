@@ -362,15 +362,15 @@ public class PluginManager {
                         classLoader.removePlugin(pluginId);
                         clearViewConstructorCache();
                         //添加新版本的插件
-                        classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
+                        classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId));
                     }
                 } else {
                     if (cl instanceof ZeusClassLoader) {
                         ZeusClassLoader classLoader = (ZeusClassLoader) cl;
-                        classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
+                        classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId));
                     } else {
                         ZeusClassLoader classLoader = new ZeusClassLoader(cl);
-                        classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
+                        classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId));
                         PluginUtil.setField(mPackageInfo, "mClassLoader", classLoader);
                         Thread.currentThread().setContextClassLoader(classLoader);
                         mNowClassLoader = classLoader;
@@ -559,15 +559,11 @@ public class PluginManager {
         if (classLoader instanceof ZeusHotfixClassLoader) {
             hotfixClassLoader = (ZeusHotfixClassLoader) classLoader;
             hotfixClassLoader.addAPKPath(PluginUtil.getAPKPath(pluginId),
-                    PluginUtil.getLibFileInside(pluginId),
-                    PluginUtil.getInstalledPathInfo(pluginId));
+                    PluginUtil.getLibFileInside(pluginId));
         } else {
-            ArrayList<String> infos = new ArrayList<>();
-            infos.add(PluginUtil.getInstalledPathInfo(pluginId));
             hotfixClassLoader = new ZeusHotfixClassLoader(PluginUtil.getAPKPath(pluginId),
                     PluginUtil.getDexCacheParentDirectPath(),
                     PluginUtil.getLibFileInside(pluginId),
-                    infos,
                     classLoader);
             hotfixClassLoader.setOrgAPKClassLoader(orgClassLoader);
             PluginUtil.setField(orgClassLoader, "parent", hotfixClassLoader);
@@ -600,7 +596,7 @@ public class PluginManager {
                     if (classLoader == null) {
                         classLoader = new ZeusClassLoader(mBaseContext.getClassLoader());
                     }
-                    classLoader.addAPKPath(pluginId, PluginUtil.getAPKPath(pluginId), PluginUtil.getLibFileInside(pluginId), PluginUtil.getInstalledPathInfo(pluginId));
+                    classLoader.addAPKPath(pluginId, PluginUtil.getAPKPath(pluginId), PluginUtil.getLibFileInside(pluginId));
                     putLoadedPlugin(pluginId, installedPluginMaps.get(pluginId));
                     isNeedLoadResource = true;
                 }

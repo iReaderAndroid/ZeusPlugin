@@ -25,10 +25,9 @@ class ZeusPluginClassLoader extends ClassLoader {
 
     private boolean mInitialized;
     public final String mRawDexPath;
-    private String mPathInfos = null;
     final private String mPluginId;
 
-    public ZeusPluginClassLoader(String pluginId, String dexPath, String dexOutputDir, String libPath, String pathInfos,
+    public ZeusPluginClassLoader(String pluginId, String dexPath, String dexOutputDir, String libPath,
                                     ClassLoader parent) {
 
         super(parent);
@@ -38,7 +37,6 @@ class ZeusPluginClassLoader extends ClassLoader {
         mRawDexPath = dexPath;
         mDexOutputPath = dexOutputDir;
         mRawLibPath = libPath;
-        mPathInfos = pathInfos;
     }
 
     public String getPluginId() {
@@ -213,14 +211,6 @@ class ZeusPluginClassLoader extends ClassLoader {
 
             if (test.exists()) {
                 return pathName;
-            } else {
-                if (TextUtils.isEmpty(mPathInfos)) {
-                    return null;
-                }
-                String fileNameForNewPlug = PluginUtil.getFinalSoName(pathName, mPathInfos);
-                if (PluginUtil.exists(fileNameForNewPlug)) {
-                    return fileNameForNewPlug;
-                }
             }
         }
         return null;

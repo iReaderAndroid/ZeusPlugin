@@ -440,7 +440,7 @@ public class PluginUtil {
      * @param fileNameReg 需要解压的文件夹路径如：res/drawable-hdpi/
      * @return 是否成功
      */
-    public static boolean unzipFile(String zipFile, String toDir, String fileNameReg, String pathInfo) {
+    public static boolean unzipFile(String zipFile, String toDir, String fileNameReg) {
         boolean result = false;
         byte[] buffer = new byte[BUF_SIZE];
         InputStream in = null;
@@ -452,8 +452,8 @@ public class PluginUtil {
             ZipEntry entry;
             while (null != (entry = zipIn.getNextEntry())) {
                 String zipName = entry.getName();
-                String relName = PluginUtil.getFinalSoName(toDir + zipName, pathInfo);
                 if (zipName.startsWith(fileNameReg)) {
+                    String relName = toDir + zipName;
                     File unzipFile = new File(toDir);
                     if (unzipFile.isDirectory()) {
                         createDirWithFile(relName);
@@ -534,26 +534,6 @@ public class PluginUtil {
             close(out);
         }
         return true;
-    }
-
-    /**
-     * 生成最终的so文件的名称，在原so名称后添加version文件用来标识不同版本的so文件
-     *
-     * @param name       so文件名
-     * @param randomInfo so后缀的随机信息
-     * @return 最终的so文件的名称
-     */
-    public static String getFinalSoName(String name, String randomInfo) {
-        try {
-            String s;
-            s = name.substring(0, name.lastIndexOf(".")) +
-                    randomInfo +
-                    name.substring(name.lastIndexOf("."));
-            return s;
-        } catch (Throwable e) {
-            e.printStackTrace();
-            return name;
-        }
     }
 
     //start========================反射相关方法========================
