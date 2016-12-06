@@ -12,7 +12,7 @@ import java.io.InputStream;
 import zeus.plugin.PluginConfig;
 import zeus.plugin.PluginManager;
 import zeus.plugin.PluginUtil;
-import zeus.plugin.ZeusBaseAppCompactActivity;
+import zeus.plugin.ZeusBaseActivity;
 import zeus.plugin.ZeusPlugin;
 import zeus.test.hotfix.TestHotFixActivity;
 import zeus.test.plugin.TestPluginActivity;
@@ -21,7 +21,7 @@ import zeus.test.plugin.TestPluginActivity;
 /**
  * Created by huangjian on 2016/6/21.
  */
-public class MainActivity extends ZeusBaseAppCompactActivity {
+public class MainActivity extends ZeusBaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

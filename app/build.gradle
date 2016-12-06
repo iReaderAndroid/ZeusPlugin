@@ -4,6 +4,10 @@ apply plugin: 'com.android.application'
 apply plugin: 'patch-gradle-plugin'
 //end------------补丁相关，使用gradle插件，如果宿主是只运行于android 4.4及以上可以不添加这些代码------------------
 apply plugin: 'jar-gradle-plugin'//生成jar包插件
+
+//为了可以使用public.xml来固定宿主的资源ID
+apply from: 'public-xml.gradle'
+
 android {
     compileSdkVersion 23
     buildToolsVersion '23.0.2'
@@ -32,7 +36,6 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':ZeusPlugin')
-    compile 'com.android.support:appcompat-v7:23.1.1'
 }
 
 

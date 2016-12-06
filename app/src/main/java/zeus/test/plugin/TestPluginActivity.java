@@ -3,7 +3,6 @@ package zeus.test.plugin;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.Toast;
 
@@ -13,7 +12,7 @@ import java.io.InputStream;
 import zeus.plugin.PluginConfig;
 import zeus.plugin.PluginManager;
 import zeus.plugin.PluginUtil;
-import zeus.plugin.ZeusBaseAppCompactActivity;
+import zeus.plugin.ZeusBaseActivity;
 import zeus.plugin.ZeusPlugin;
 import zeus.test.R;
 
@@ -24,12 +23,12 @@ import zeus.test.R;
  * @date 16/8/21
  * @time 上午1:09
  */
-public class TestPluginActivity extends ZeusBaseAppCompactActivity {
+public class TestPluginActivity extends ZeusBaseActivity {
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_plugin);
-        getSupportActionBar().setTitle("插件测试");
+        setTitle("插件测试");
         findViewById(R.id.plugin_test).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

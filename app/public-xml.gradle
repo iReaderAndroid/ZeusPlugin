@@ -1,0 +1,19 @@
+afterEvaluate {
+    for (variant in android.applicationVariants) {
+        def scope = variant.getVariantData().getScope()
+        String mergeTaskName = scope.getMergeResourcesTask().name
+        def mergeTask = tasks.getByName(mergeTaskName)
+
+        mergeTask.doLast {
+            copy {
+                int i=0
+                from(android.sourceSets.main.res.srcDirs) {
+                    include 'values/public.xml'
+                    rename 'public.xml', (i++ == 0? "public.xml": "public_${i}.xml")
+                }
+
+                into(mergeTask.outputDir)
+            }
+        }
+    }
+}

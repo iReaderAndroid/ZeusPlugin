@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.widget.TextView;
 
-import zeus.plugin.ZeusBaseAppCompactActivity;
+import zeus.plugin.ZeusBaseActivity;
 import zeus.test.R;
 
 /**
@@ -14,7 +14,7 @@ import zeus.test.R;
  * @date 16/8/21
  * @time 上午2:04
  */
-public class TestHotFixActivity extends ZeusBaseAppCompactActivity {
+public class TestHotFixActivity extends ZeusBaseActivity {
 
     @Override
     protected void onCreate( Bundle savedInstanceState) {
@@ -26,7 +26,6 @@ public class TestHotFixActivity extends ZeusBaseAppCompactActivity {
         textView.setTextColor(getResources().getColor(android.R.color.holo_red_light));
         textView.setGravity(Gravity.CENTER);
         textView.setText(new TestHotFix().getTestString());
-        getSupportActionBar().setTitle(new TestHotFix().getTestString2());
     }
 
     public static String getString(){

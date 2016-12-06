@@ -1,5 +1,6 @@
 package zeus.plugin;
 
+import android.content.res.AssetManager;
 import android.text.TextUtils;
 
 import java.io.BufferedInputStream;
@@ -477,6 +478,35 @@ public class PluginUtil {
             close(zipIn);
         }
         return result;
+    }
+
+    /**
+     * 复制assets下文件到一个路径下
+     * @param assetsFileName 要复制的assets的文件名
+     * @param filePath 复制后的文件的绝对路径
+     * @return true表示成功了
+     */
+    public static boolean copyAssetsFile(String assetsFileName, String filePath){
+        FileOutputStream out = null;
+        InputStream in = null;
+        try {
+            AssetManager am = PluginManager.mBaseResources.getAssets();
+            in = am.open(assetsFileName);
+            PluginUtil.createDirWithFile(filePath);
+            out = new FileOutputStream(filePath, false);
+            byte[] temp = new byte[2048];
+            int len;
+            while ((len = in.read(temp)) > 0) {
+                out.write(temp, 0, len);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            close(in);
+            close(out);
+        }
+        return true;
     }
     //end========================压缩解压相关方法========================
 
