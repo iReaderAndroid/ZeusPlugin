@@ -63,7 +63,11 @@ public class PluginUtil {
      * @return 安装后的某个插件文件路径
      */
     public static String getAPKPath(String pluginName) {
-        return PluginUtil.getPlugDir(pluginName) + getInstalledPathInfo(pluginName) + PluginConfig.PLUGIN_SUFF;
+        return getAPKPath(pluginName, getInstalledPathInfo(pluginName));
+    }
+
+    public static String getAPKPath(String pluginName, String pathifo){
+        return PluginUtil.getPlugDir(pluginName)+ pathifo + PluginConfig.PLUGIN_SUFF;
     }
 
     /**

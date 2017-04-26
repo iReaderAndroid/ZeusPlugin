@@ -1,5 +1,10 @@
 package zeus.plugin;
 
+import android.text.TextUtils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * 插件的配置，对应文件存放在插件apk下的assets/plugin.meta,这也是可配置的
  * 之所以没有放在androidManifest.xml中是因为有些手机使用无法获取插件中对应的meta data数据。
@@ -36,4 +41,47 @@ public class PluginManifest {
      * 插件的其他信息，可扩展，可是其他json格式字符串
      */
     public String otherInfo = "";
+
+    public PluginManifest(){}
+    public PluginManifest(String manifest) {
+        try {
+            JSONObject jsonObject = new JSONObject(manifest);
+            name = jsonObject.optString(PLUG_NAME);
+            minVersion = jsonObject.optString(PLUG_MIN_VERSION);
+            maxVersion = jsonObject.optString(PLUG_MAX_VERSION);
+            version = jsonObject.optString(PLUG_VERSION);
+            mainClass = jsonObject.optString(PLUG_MAINCLASS);
+            otherInfo = jsonObject.optString(PLUG_OTHER_INFO);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int getVersion() {
+        if (!TextUtils.isEmpty(version)) {
+            try {
+                return Integer.valueOf(version);
+            } catch (Throwable e) {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public String toString() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put(PLUG_NAME, name);
+            jsonObject.put(PLUG_MIN_VERSION, minVersion);
+            jsonObject.put(PLUG_MAX_VERSION, maxVersion);
+            jsonObject.put(PLUG_VERSION, version);
+            jsonObject.put(PLUG_MAINCLASS, mainClass);
+            jsonObject.put(PLUG_OTHER_INFO, otherInfo);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject.toString();
+    }
 }

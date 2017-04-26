@@ -74,7 +74,7 @@ public class ZeusPlugin {
             mInstalledPathInfo = getInstalledPathInfoNoCache();
             return false;
         }
-        PluginManager.addInstalledPlugin(mPluginId, Integer.valueOf(meta.version));
+        PluginManager.addInstalledPlugin(mPluginId, meta);
         isInstalling = false;
         return true;
     }
@@ -137,7 +137,7 @@ public class ZeusPlugin {
             }
             isAssetInstalling = false;
         }
-        PluginManager.addInstalledPlugin(mPluginId, Integer.valueOf(meta.version));
+        PluginManager.addInstalledPlugin(mPluginId, meta);
         return true;
     }
 
