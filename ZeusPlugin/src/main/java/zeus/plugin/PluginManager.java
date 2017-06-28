@@ -72,7 +72,11 @@ public class PluginManager {
      * @param application application
      */
     public static void init(Application application, HashMap<String, Integer> defaultList) {
-        mDefaultList = defaultList;
+        if(defaultList == null){
+            mDefaultList = new HashMap<>();
+        }else{
+            mDefaultList = defaultList;
+        }
         //兼容7.0创建webview的时候会重新设置Resouces
         try{
             new WebView(application);
