@@ -1,5 +1,7 @@
 {
     "name": "zeushotfix_test",
     "minVersion": "1",
-    "version": "1"
+    "version": "1",
+    "otherInfo": "",
+     "flag": ""
 }

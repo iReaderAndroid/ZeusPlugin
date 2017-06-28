@@ -1,5 +1,6 @@
 package zeus.test.plugin;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Bundle;
@@ -9,11 +10,10 @@ import android.widget.Toast;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
-import zeus.plugin.PluginConfig;
 import zeus.plugin.PluginManager;
 import zeus.plugin.PluginUtil;
-import zeus.plugin.ZeusBaseActivity;
 import zeus.plugin.ZeusPlugin;
+import zeus.test.MyApplication;
 import zeus.test.R;
 
 /**
@@ -23,7 +23,7 @@ import zeus.test.R;
  * @date 16/8/21
  * @time 上午1:09
  */
-public class TestPluginActivity extends ZeusBaseActivity {
+public class TestPluginActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,9 +49,9 @@ public class TestPluginActivity extends ZeusBaseActivity {
      *
      */
     public void startPlugin() {
-        PluginManager.loadLastVersionPlugin(PluginConfig.PLUGIN_TEST);
+        PluginManager.loadLastVersionPlugin(MyApplication.PLUGIN_TEST);
         try {
-            Class cl = PluginManager.mNowClassLoader.loadClass(PluginManager.getPlugin(PluginConfig.PLUGIN_TEST).getPluginMeta().mainClass);
+            Class cl = PluginManager.mNowClassLoader.loadClass(PluginManager.getPlugin(MyApplication.PLUGIN_TEST).getPluginMeta().mainClass);
             Intent intent = new Intent(this, cl);
             //这种方式为通过在宿主AndroidManifest.xml中预埋activity实现
 //            startActivity(intent);
@@ -69,14 +69,14 @@ public class TestPluginActivity extends ZeusBaseActivity {
      *
      */
     public void installPlugin() {
-        ZeusPlugin zeusPlugin = PluginManager.getPlugin(PluginConfig.PLUGIN_TEST);
+        ZeusPlugin zeusPlugin = PluginManager.getPlugin(MyApplication.PLUGIN_TEST);
         FileOutputStream out = null;
         InputStream in = null;
         try {
             AssetManager am = PluginManager.mBaseResources.getAssets();
             in = am.open("zeusplugin_test_version2.apk");
-            PluginUtil.createDirWithFile(PluginUtil.getZipPath(PluginConfig.PLUGIN_TEST));
-            out = new FileOutputStream(PluginUtil.getZipPath(PluginConfig.PLUGIN_TEST), false);
+            PluginUtil.createDirWithFile(PluginUtil.getZipPath(MyApplication.PLUGIN_TEST));
+            out = new FileOutputStream(PluginUtil.getZipPath(MyApplication.PLUGIN_TEST), false);
             byte[] temp = new byte[2048];
             int len;
             while ((len = in.read(temp)) > 0) {

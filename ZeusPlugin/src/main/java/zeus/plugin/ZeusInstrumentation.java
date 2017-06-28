@@ -16,7 +16,7 @@ public class ZeusInstrumentation extends Instrumentation{
         if(className.equals("com.zeus.ZeusActivityForStandard") && intent != null){
             Bundle bundle = intent.getExtras();
             if(bundle != null){
-                String realActivity = bundle.getString(PluginConfig.PLUGIN_REAL_ACTIVITY);
+                String realActivity = bundle.getString(PluginConstant.PLUGIN_REAL_ACTIVITY);
                 if(!TextUtils.isEmpty(realActivity)){
                     return super.newActivity(cl, realActivity, intent);
                 }

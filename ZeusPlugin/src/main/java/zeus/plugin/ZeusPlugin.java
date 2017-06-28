@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
+import dalvik.system.DexClassLoader;
+
 /**
  * 插件类，包括插件的安装、卸载、清除
  * Created by huangjian on 2016/6/21.
@@ -51,14 +53,6 @@ public class ZeusPlugin {
             mInstalledPathInfo = getInstalledPathInfoNoCache();
             return false;
         }
-        //拷贝so文件，一些插件是没有so文件，而这个方法耗时还稍微高点，所以对于没有so的插件和补丁是不会拷贝的。
-        if (!PluginUtil.isHotfixWithoutSoFile(mPluginId) &&
-                !PluginUtil.isPluginWithoutSoFile(mPluginId) &&
-                !copySoFile(mInstalledPathInfo, PluginUtil.getCpuArchitecture())) {
-            isInstalling = false;
-            mInstalledPathInfo = getInstalledPathInfoNoCache();
-            return false;
-        }
 
         //校验是否下载的是正确文件，如果插件下载错误则获取这个配置文件就会失败。
         PluginManifest meta = getPluginMeta();
@@ -69,10 +63,24 @@ public class ZeusPlugin {
             return false;
         }
 
+        //拷贝so文件，一些插件是没有so文件，而这个方法耗时还稍微高点，所以对于没有so的插件和补丁是不会拷贝的。
+        if (((meta.getFlag() & PluginManifest.FLAG_WITHOUT_SO_FILE) != PluginManifest.FLAG_WITHOUT_SO_FILE )&&
+                !copySoFile(mInstalledPathInfo, PluginUtil.getCpuArchitecture())) {
+            isInstalling = false;
+            mInstalledPathInfo = getInstalledPathInfoNoCache();
+            return false;
+        }
+
         if (!PluginUtil.writePathInfo(mPluginId, mInstalledPathInfo)) {
             isInstalling = false;
             mInstalledPathInfo = getInstalledPathInfoNoCache();
             return false;
+        }
+        try {
+            //预优化补丁dex的加载
+            new DexClassLoader(getAPKPath(mPluginId), PluginUtil.getDexCacheParentDirectPath(), "", PluginManager.mBaseClassLoader);
+        }catch (Throwable e){
+            e.printStackTrace();
         }
         PluginManager.addInstalledPlugin(mPluginId, meta);
         isInstalling = false;
@@ -99,7 +107,7 @@ public class ZeusPlugin {
             InputStream in = null;
             try {
                 AssetManager am = PluginManager.mBaseResources.getAssets();
-                in = am.open(mPluginId + PluginConfig.PLUGIN_SUFF);
+                in = am.open(mPluginId + PluginConstant.PLUGIN_SUFF);
                 PluginUtil.createDirWithFile(getAPKPath(mPluginId));
                 out = new FileOutputStream(getAPKPath(mPluginId), false);
                 byte[] temp = new byte[2048];
@@ -116,12 +124,6 @@ public class ZeusPlugin {
                 PluginUtil.close(in);
                 PluginUtil.close(out);
             }
-            //拷贝so文件
-            if (!copySoFile(mInstalledPathInfo, PluginUtil.getCpuArchitecture())) {
-                isInstalling = false;
-                mInstalledPathInfo = getInstalledPathInfoNoCache();
-                return false;
-            }
 
             meta = getPluginMeta();
             if (meta == null) {
@@ -130,12 +132,26 @@ public class ZeusPlugin {
                 mInstalledPathInfo = getInstalledPathInfoNoCache();
                 return false;
             }
+
+            //拷贝so文件
+            if (!copySoFile(mInstalledPathInfo, PluginUtil.getCpuArchitecture())) {
+                isInstalling = false;
+                mInstalledPathInfo = getInstalledPathInfoNoCache();
+                return false;
+            }
+
             if (!PluginUtil.writePathInfo(mPluginId, mInstalledPathInfo)) {
                 isAssetInstalling = false;
                 mInstalledPathInfo = getInstalledPathInfoNoCache();
                 return false;
             }
             isAssetInstalling = false;
+        }
+        try {
+            //预优化补丁dex的加载
+            new DexClassLoader(getAPKPath(mPluginId), PluginUtil.getDexCacheParentDirectPath(), "", PluginManager.mBaseClassLoader);
+        }catch (Throwable e){
+            e.printStackTrace();
         }
         PluginManager.addInstalledPlugin(mPluginId, meta);
         return true;
@@ -154,7 +170,7 @@ public class ZeusPlugin {
             if (list == null) return;
             for (File f : list) {
                 String fileFullName = f.getName();
-                if (fileFullName.endsWith(PluginConfig.PLUGIN_JAR_SUFF) || fileFullName.endsWith(PluginConfig.PLUGIN_SUFF)) {
+                if (fileFullName.endsWith(PluginConstant.PLUGIN_JAR_SUFF) || fileFullName.endsWith(PluginConstant.PLUGIN_SUFF)) {
                     String fileName = fileFullName.substring(0, fileFullName.lastIndexOf("."));
                     if (!fileName.equalsIgnoreCase(installedPathInfo)) {
                         f.delete();
@@ -194,7 +210,7 @@ public class ZeusPlugin {
      * @return 插件已经安装的apk路径
      */
     public String getAPKPath(String pluginName) {
-        return PluginUtil.getPlugDir(pluginName) + getInstalledPathInfo() + PluginConfig.PLUGIN_SUFF;
+        return PluginUtil.getPlugDir(pluginName) + getInstalledPathInfo() + PluginConstant.PLUGIN_SUFF;
     }
 
     /**
@@ -267,7 +283,7 @@ public class ZeusPlugin {
      * @return meta字符串
      */
     private String readMeta() {
-        return PluginUtil.readZipFileString(getAPKPath(mPluginId), PluginConfig.PLUGINWEB_MAINIFEST_FILE);
+        return PluginUtil.readZipFileString(getAPKPath(mPluginId), PluginConstant.PLUGINWEB_MAINIFEST_FILE);
     }
 
     /**

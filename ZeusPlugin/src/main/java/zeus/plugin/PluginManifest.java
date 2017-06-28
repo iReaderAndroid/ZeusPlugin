@@ -17,6 +17,9 @@ public class PluginManifest {
     public static final String PLUG_VERSION = "version";
     public static final String PLUG_MAINCLASS = "mainClass";
     public static final String PLUG_OTHER_INFO = "otherInfo";
+    public static final String PLUG_FLAG = "flag";
+    public static final int FLAG_WITHOUT_RESOURCES = 0x1;
+    public static final int FLAG_WITHOUT_SO_FILE = 0x2;
     /**
      * 插件显示的名称
      */
@@ -42,7 +45,11 @@ public class PluginManifest {
      */
     public String otherInfo = "";
 
-    public PluginManifest(){}
+    public String flag = "";
+
+    public PluginManifest() {
+    }
+
     public PluginManifest(String manifest) {
         try {
             JSONObject jsonObject = new JSONObject(manifest);
@@ -52,6 +59,7 @@ public class PluginManifest {
             version = jsonObject.optString(PLUG_VERSION);
             mainClass = jsonObject.optString(PLUG_MAINCLASS);
             otherInfo = jsonObject.optString(PLUG_OTHER_INFO);
+            flag = jsonObject.optString(PLUG_FLAG);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -69,6 +77,10 @@ public class PluginManifest {
         }
     }
 
+    public int getFlag() {
+        return TextUtils.isEmpty(flag) ? 0 : Integer.valueOf(flag);
+    }
+
     @Override
     public String toString() {
         JSONObject jsonObject = new JSONObject();
@@ -79,6 +91,7 @@ public class PluginManifest {
             jsonObject.put(PLUG_VERSION, version);
             jsonObject.put(PLUG_MAINCLASS, mainClass);
             jsonObject.put(PLUG_OTHER_INFO, otherInfo);
+            jsonObject.put(PLUG_OTHER_INFO, flag);
         } catch (JSONException e) {
             e.printStackTrace();
         }

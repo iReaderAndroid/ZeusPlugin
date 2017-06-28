@@ -2,5 +2,7 @@
     "name": "zeusplugin_asset",
     "minVersion": "1",
     "version": "2",
-    "mainClass": "zeus.testplugin.MainActivity"
+    "mainClass": "zeus.testplugin.MainActivity",
+    "otherInfo": "",
+    "flag": ""
 }

@@ -67,7 +67,7 @@ public class PluginUtil {
     }
 
     public static String getAPKPath(String pluginName, String pathifo){
-        return PluginUtil.getPlugDir(pluginName)+ pathifo + PluginConfig.PLUGIN_SUFF;
+        return PluginUtil.getPlugDir(pluginName)+ pathifo + PluginConstant.PLUGIN_SUFF;
     }
 
     /**
@@ -118,7 +118,7 @@ public class PluginUtil {
      */
     public static boolean iszeusPlugin(String pluginId) {
         return !TextUtils.isEmpty(pluginId) &&
-                (pluginId.startsWith(PluginConfig.EXP_PLUG_PREFIX) ||
+                (pluginId.startsWith(PluginConstant.EXP_PLUG_PREFIX) ||
                         isHotFix(pluginId));
     }
 
@@ -129,52 +129,7 @@ public class PluginUtil {
      * @return 是否是插件或者补丁
      */
     public static boolean isPlugin(String pluginId) {
-        return !TextUtils.isEmpty(pluginId) && pluginId.startsWith(PluginConfig.EXP_PLUG_PREFIX);
-    }
-
-    /**
-     * 是否是不带so文件的插件
-     *
-     * @param pluginId 插件id
-     * @return 是否是插件或者补丁
-     */
-    public static boolean isPluginWithoutSoFile(String pluginId) {
-        return !TextUtils.isEmpty(pluginId) && pluginId.startsWith(PluginConfig.EXP_PLUG_NO_SO_PREFIX);
-    }
-
-    /**
-     * 是否是不带so文件的补丁
-     *
-     * @param pluginId 插件id
-     * @return 是否是不带so文件的补丁
-     */
-    public static boolean isHotfixWithoutSoFile(String pluginId) {
-        return !TextUtils.isEmpty(pluginId) &&
-                (pluginId.startsWith(PluginConfig.EXP_PLUG_HOT_FIX_NO_SO_PREFIX) ||
-                        pluginId.startsWith(PluginConfig.EXP_PLUG_HOT_FIX_NO_RES_SO_PREFIX));
-    }
-
-    /**
-     * 是否是不带资源文件的补丁
-     *
-     * @param pluginId 插件id
-     * @return ture表明是不带资源文件的补丁
-     */
-    public static boolean isHotfixWithoutResFile(String pluginId) {
-        return !TextUtils.isEmpty(pluginId) &&
-                (pluginId.startsWith(PluginConfig.EXP_PLUG_HOT_FIX_NO_RES_PREFIX) ||
-                        pluginId.startsWith(PluginConfig.EXP_PLUG_HOT_FIX_NO_RES_SO_PREFIX));
-    }
-
-
-    /**
-     * 是否是不带so和资源文件的补丁
-     *
-     * @param pluginId 插件id
-     * @return ture表明是不带so和资源文件的补丁
-     */
-    public static boolean isHotfixWithoutSoAndResFile(String pluginId) {
-        return !TextUtils.isEmpty(pluginId) && pluginId.startsWith(PluginConfig.EXP_PLUG_HOT_FIX_NO_RES_SO_PREFIX);
+        return !TextUtils.isEmpty(pluginId) && pluginId.startsWith(PluginConstant.EXP_PLUG_PREFIX);
     }
 
     /**
@@ -184,7 +139,7 @@ public class PluginUtil {
      * @return 是否是补丁文件
      */
     public static boolean isHotFix(String pluginId) {
-        return !TextUtils.isEmpty(pluginId) && pluginId.startsWith(PluginConfig.EXP_PLUG_HOT_FIX_PREFIX);
+        return !TextUtils.isEmpty(pluginId) && pluginId.startsWith(PluginConstant.EXP_PLUG_HOT_FIX_PREFIX);
     }
 
     /**
@@ -522,7 +477,7 @@ public class PluginUtil {
      */
     public static String getInstalledPathInfo(String pluginId) {
         String result = null;
-        String libFileInfoPath = getPlugDir(pluginId) + PluginConfig.PLUGIN_INSTALLED_INFO_PATH;
+        String libFileInfoPath = getPlugDir(pluginId) + PluginConstant.PLUGIN_INSTALLED_INFO_PATH;
         BufferedInputStream bis = null;
         ByteArrayOutputStream baos = null;
         try {
@@ -552,7 +507,7 @@ public class PluginUtil {
      * @return 是否成功
      */
     public static boolean writePathInfo(String pluginId, String installedPathInfo) {
-        String infoPath = PluginUtil.getPlugDir(pluginId) + PluginConfig.PLUGIN_INSTALLED_INFO_PATH;
+        String infoPath = PluginUtil.getPlugDir(pluginId) + PluginConstant.PLUGIN_INSTALLED_INFO_PATH;
         File file = new File(infoPath);
         FileOutputStream out = null;
         try {

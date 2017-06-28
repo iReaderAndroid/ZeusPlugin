@@ -10,6 +10,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.webkit.WebView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,7 +20,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,6 +52,7 @@ public class PluginManager {
     private static HashMap<String, PluginManifest> mInstalledPluginList = null; //已安装的插件列表
     private static HashMap<String, PluginManifest> mLoadedPluginList = null;    //已加载的插件列表
     private static HashMap<String, String> mLoadedDiffPluginPathinfoList = null;
+    private static ArrayList<String> mOrgAssetPaths = new ArrayList<>();
 
     private static final Object mInstalledPluginListLock = new Object(); //插件安装的锁，支持多线程安装
     private static final Object mLoadedPluginListLock = new Object();    //修改已加载的插件对象的锁
@@ -56,6 +60,7 @@ public class PluginManager {
 
     private static boolean isIniteInstallPlugins = false;                //插件是否已经初始化
 
+    private static HashMap<String, Integer> mDefaultList;
     /**
      * 缓存插件的对象
      */
@@ -66,7 +71,13 @@ public class PluginManager {
      *
      * @param application application
      */
-    public static void init(Application application) {
+    public static void init(Application application, HashMap<String, Integer> defaultList) {
+        mDefaultList = defaultList;
+        //兼容7.0创建webview的时候会重新设置Resouces
+        try{
+            new WebView(application);
+        }catch (Throwable e){
+        }
         //初始化一些成员变量和加载已安装的插件
         mPackageInfo = PluginUtil.getField(application.getBaseContext(), "mPackageInfo");
         mBaseContext = application.getBaseContext();
@@ -74,6 +85,7 @@ public class PluginManager {
         mBaseClassLoader = mBaseContext.getClassLoader();
         mNowResources = mBaseContext.getResources();
         mBaseResources = mNowResources;
+        initOrgAssetPaths(mBaseContext);
         //更改系统的Instrumentation对象，以便创建插件的activity
         Object mMainThread = PluginUtil.getField(mBaseContext, "mMainThread");
         PluginUtil.setField(mMainThread, "mInstrumentation", new ZeusInstrumentation());
@@ -99,6 +111,24 @@ public class PluginManager {
         PluginUtil.createDir(PluginUtil.getDexCacheParentDirectPath());
     }
 
+    private static void initOrgAssetPaths(Context baseContext) {
+        try {
+            mOrgAssetPaths.clear();
+            AssetManager assetManager = baseContext.getAssets();
+            Method getStringBlockCountMethod = PluginUtil.getMethod(assetManager.getClass(), "getStringBlockCount");
+            Method getCookieNameMethod = PluginUtil.getMethod(assetManager.getClass(), "getCookieName", Integer.TYPE);
+            int num = (Integer) getStringBlockCountMethod.invoke(assetManager, new Object[0]);
+            String str;
+            for (int i = 1; i <= num; i++) {
+                str = (String) getCookieNameMethod.invoke(assetManager, i);
+                if (!mOrgAssetPaths.contains(str)) {
+                    mOrgAssetPaths.add(str);
+                }
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * 安装初始的内置插件
      */
@@ -200,7 +230,7 @@ public class PluginManager {
      * @return 内置插件列表
      */
     public static HashMap<String, Integer> getDefaultPlugin() {
-        return PluginConfig.mDefaultList;
+        return mDefaultList;
     }
 
 
@@ -396,8 +426,8 @@ public class PluginManager {
                 putLoadedPlugin(pluginId, meta, pathInfo);
             }
             clearViewConstructorCache();
-            if (!PluginUtil.isHotfixWithoutResFile(pluginId)) {
-                reloadInstalledPluginResources();
+            if ((meta.getFlag() & PluginManifest.FLAG_WITHOUT_RESOURCES) != PluginManifest.FLAG_WITHOUT_RESOURCES) {
+                reloadInstalledPluginResources(false);
             }
         }
         return true;
@@ -464,57 +494,93 @@ public class PluginManager {
      *
      * @param resouces resouces
      */
-    private static void clearResoucesDrawableCache(Resources resouces) {
-        resouces.finishPreloading();
-        resouces.flushLayoutCache();
+    static private void clearResoucesDrawableCache(Object resouces) {
+        if (resouces == null) return;
+        Method flushLayoutCacheMethod = PluginUtil.getMethod(resouces.getClass(), "flushLayoutCache");
+        if (flushLayoutCacheMethod != null) {
+            try {
+                flushLayoutCacheMethod.invoke(resouces);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
         clearCacheObject(PluginUtil.getField(resouces, "mDrawableCache"));
         clearCacheObject(PluginUtil.getField(resouces, "mColorDrawableCache"));
         clearCacheObject(PluginUtil.getField(resouces, "mColorStateListCache"));
         clearCacheObject(PluginUtil.getField(resouces, "mAnimatorCache"));
         clearCacheObject(PluginUtil.getField(resouces, "mStateListAnimatorCache"));
-    }
 
+        //清除对象池中的缓存
+        Object typedArrayPool = PluginUtil.getField(resouces, "mTypedArrayPool");
+        if (typedArrayPool != null) {
+            Method acquirePath = PluginUtil.getMethod(typedArrayPool.getClass(), "acquire");
+            try {
+                while (acquirePath.invoke(typedArrayPool) != null) ;
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     /**
      * 加载所有已安装的插件的资源，并清除资源中的缓存
-     * 一旦插件发现变化，则使用一个新的Resources
-     * 这样之前resources的缓存都不会对新resources产生影响
      */
-    private static void reloadInstalledPluginResources() {
+    private static void reloadInstalledPluginResources(boolean isCalledInInit) {
         try {
-            AssetManager assetManager = AssetManager.class.newInstance();
-            Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
-            addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
+            AssetManager assetManager = mBaseContext.getResources().getAssets().getClass().newInstance();
+            Method ensureStringBlocksMethod = PluginUtil.getMethod(assetManager.getClass(), "ensureStringBlocks");
+            ensureStringBlocksMethod.invoke(assetManager);
+            Method addAssetPath = PluginUtil.getMethod(assetManager.getClass(), "addAssetPath", String.class);
+            for (String assetpath : mOrgAssetPaths) {
+                addAssetPath.invoke(assetManager, assetpath);
+            }
             if (mLoadedPluginList != null && mLoadedPluginList.size() != 0) {
-                //每个插件的packageID都不能一样
                 for (String id : mLoadedPluginList.keySet()) {
-                    //只有带有资源的补丁才会执行添加到assetManager中
-                    if (!PluginUtil.isHotfixWithoutResFile(id)) {
-                        addAssetPath.invoke(assetManager, PluginUtil.getAPKPath(id, mLoadedDiffPluginPathinfoList.get(id)));
-                    }
+                    String pluginResPath = PluginUtil.getAPKPath(id, mLoadedDiffPluginPathinfoList.get(id));
+                    addAssetPath.invoke(assetManager, pluginResPath);
                 }
             }
-            //这里提前创建一个resource是因为Resources的构造函数会对AssetManager进行一些变量的初始化
-            //还不能创建系统的Resources类，否则中兴系统会出现崩溃问题
-            PluginResources newResources = new PluginResources(assetManager,
-                    mBaseContext.getResources().getDisplayMetrics(),
-                    mBaseContext.getResources().getConfiguration());
-
-            PluginUtil.setField(mBaseContext, "mResources", newResources);
-            //这是最主要的需要替换的，如果不支持插件运行时更新，只留这一个就可以了
-            PluginUtil.setField(mPackageInfo, "mResources", newResources);
-
-            //清除一下之前的resource的数据，释放一些内存
-            //因为这个resource有可能还被系统持有着，内存都没被释放
-            clearResoucesDrawableCache(mNowResources);
-
-            mNowResources = newResources;
-            //需要清理mtheme对象，否则通过inflate方式加载资源会报错
-            //如果是activity动态加载插件，则需要把activity的mTheme对象也设置为null
-            PluginUtil.setField(mBaseContext, "mTheme", null);
+            Map resouresMap;
+            Object mResourcesManager = PluginUtil.getField(mBaseContext, "mResourcesManager");
+            if (mResourcesManager != null) {
+                resouresMap = (Map) PluginUtil.getField(mResourcesManager, "mActiveResources");
+                if (resouresMap == null) {
+                    resouresMap = (Map) PluginUtil.getField(mResourcesManager, "mResourceImpls");
+                }
+            } else {
+                Object mMainThread = PluginUtil.getField(mBaseContext, "mMainThread");
+                resouresMap = (Map) PluginUtil.getField(mMainThread, "mActiveResources");
+            }
+            if (resouresMap != null) {
+                for (Object resourceKey : resouresMap.keySet()) {
+                    Object resourcesWeakReference = resouresMap.get(resourceKey);
+                    if (resourcesWeakReference != null &&
+                            ((WeakReference) resourcesWeakReference).get() != null) {
+                        Object resources = ((WeakReference) resourcesWeakReference).get();
+                        PluginUtil.setField(resources, "mAssets", assetManager);
+                        if (!isCalledInInit) {
+                            clearResoucesDrawableCache(resources);
+                        }
+                    }
+                }
+            } else {
+                PluginUtil.setField(mBaseContext.getResources(), "mAssets", assetManager);
+                Object mResourcesImpl = PluginUtil.getField(mBaseContext.getResources(), "mResourcesImpl");
+                PluginUtil.setField(mResourcesImpl, "mAssets", assetManager);
+                if (!isCalledInInit) {
+                    clearResoucesDrawableCache(mResourcesImpl);
+                }
+            }
+            if (!isCalledInInit) {
+                clearResoucesDrawableCache(mBaseContext.getResources());
+            }
+            mBaseContext.getResources().updateConfiguration(mBaseContext.getResources().getConfiguration(), mBaseContext.getResources().getDisplayMetrics());
         } catch (Throwable e) {
             e.printStackTrace();
         }
     }
+
 
     /**
      * 清除已经加载过的插件
@@ -538,7 +604,7 @@ public class PluginManager {
                 ZeusClassLoader classLoader = (ZeusClassLoader) cl;
                 classLoader.removePlugin(pluginId);
             }
-            reloadInstalledPluginResources();
+            reloadInstalledPluginResources(false);
         }
     }
 
@@ -647,7 +713,7 @@ public class PluginManager {
                 Thread.currentThread().setContextClassLoader(classLoader);
                 mNowClassLoader = classLoader;
             }
-            reloadInstalledPluginResources();
+            reloadInstalledPluginResources(true);
             isIniteInstallPlugins = true;
         }
     }
@@ -687,15 +753,15 @@ public class PluginManager {
 
     public static void startActivity(Activity activity, Intent intent) {
         ComponentName componentName = intent.getComponent();
-        intent.setClassName(componentName.getPackageName(), PluginConfig.PLUGIN_ACTIVITY_FOR_STANDARD);
-        intent.putExtra(PluginConfig.PLUGIN_REAL_ACTIVITY, componentName.getClassName());
+        intent.setClassName(componentName.getPackageName(), PluginConstant.PLUGIN_ACTIVITY_FOR_STANDARD);
+        intent.putExtra(PluginConstant.PLUGIN_REAL_ACTIVITY, componentName.getClassName());
         activity.startActivity(intent);
     }
 
     public static void startActivity(Intent intent) {
         ComponentName componentName = intent.getComponent();
-        intent.setClassName(componentName.getPackageName(), PluginConfig.PLUGIN_ACTIVITY_FOR_STANDARD);
-        intent.putExtra(PluginConfig.PLUGIN_REAL_ACTIVITY, componentName.getClassName());
+        intent.setClassName(componentName.getPackageName(), PluginConstant.PLUGIN_ACTIVITY_FOR_STANDARD);
+        intent.putExtra(PluginConstant.PLUGIN_REAL_ACTIVITY, componentName.getClassName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mBaseContext.startActivity(intent);
     }
