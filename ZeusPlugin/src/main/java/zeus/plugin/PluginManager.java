@@ -533,8 +533,6 @@ public class PluginManager {
     private static void reloadInstalledPluginResources(boolean isCalledInInit) {
         try {
             AssetManager assetManager = mBaseContext.getResources().getAssets().getClass().newInstance();
-            Method ensureStringBlocksMethod = PluginUtil.getMethod(assetManager.getClass(), "ensureStringBlocks");
-            ensureStringBlocksMethod.invoke(assetManager);
             Method addAssetPath = PluginUtil.getMethod(assetManager.getClass(), "addAssetPath", String.class);
             for (String assetpath : mOrgAssetPaths) {
                 addAssetPath.invoke(assetManager, assetpath);
@@ -545,6 +543,8 @@ public class PluginManager {
                     addAssetPath.invoke(assetManager, pluginResPath);
                 }
             }
+            Method ensureStringBlocksMethod = PluginUtil.getMethod(assetManager.getClass(), "ensureStringBlocks");
+            ensureStringBlocksMethod.invoke(assetManager);
             Map resouresMap;
             Object mResourcesManager = PluginUtil.getField(mBaseContext, "mResourcesManager");
             if (mResourcesManager != null) {
