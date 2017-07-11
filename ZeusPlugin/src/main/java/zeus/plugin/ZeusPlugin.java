@@ -96,7 +96,8 @@ public class ZeusPlugin {
         PluginManifest meta;
         synchronized (this) {
             isAssetInstalling = true;
-            if (PluginManager.isInstall(mPluginId)) {
+            Integer version = PluginManager.getDefaultPlugin().get(mPluginId);
+            if (version == null || PluginManager.isInstall(mPluginId, version)) {
                 isInstalling = false;
                 return true;
             }
