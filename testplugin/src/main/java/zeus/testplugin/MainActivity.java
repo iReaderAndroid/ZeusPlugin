@@ -1,15 +1,15 @@
 package zeus.testplugin;
 
-import android.app.Activity;
 import android.os.Bundle;
 
+import zeus.plugin.ZeusBaseActivity;
 import zeus.test.StringConstant;
 import zeus.test.plugin.TestView;
 
 /**
  * Created by huangjian on 2016/7/8.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends ZeusBaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

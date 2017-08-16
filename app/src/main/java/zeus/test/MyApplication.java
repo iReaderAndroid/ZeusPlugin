@@ -5,11 +5,12 @@ import android.app.Application;
 import java.util.HashMap;
 
 import zeus.plugin.PluginManager;
+import zeus.plugin.ZeusBaseApplication;
 
 /**
  * Created by huangjain on 2016/6/21.
  */
-public class MyApplication extends Application {
+public class MyApplication extends ZeusBaseApplication {
     public static final String PLUGIN_TEST = "zeusplugin_test";                             //插件测试demo
     public static final String HOTFIX_TEST = "zeushotfix_test";                             //热修复补丁测试demo
     @Override
@@ -25,7 +26,6 @@ public class MyApplication extends Application {
         //插件必须以PluginUtil.EXP_PLUG_PREFIX开头，否则不会识别为插件
         defaultList.put(PLUGIN_TEST, 1);
         PluginManager.init(this, defaultList);
-
     }
 }
 

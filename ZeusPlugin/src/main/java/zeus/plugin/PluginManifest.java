@@ -81,6 +81,13 @@ public class PluginManifest {
         return TextUtils.isEmpty(flag) ? 0 : Integer.valueOf(flag);
     }
 
+    public boolean hasResoures() {
+        return (getFlag() & FLAG_WITHOUT_RESOURCES) != FLAG_WITHOUT_RESOURCES;
+    }
+
+    public boolean hasSoLibrary(){
+        return (getFlag() & FLAG_WITHOUT_SO_FILE) != FLAG_WITHOUT_SO_FILE;
+    }
     @Override
     public String toString() {
         JSONObject jsonObject = new JSONObject();

@@ -6,6 +6,7 @@ import android.view.Gravity;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import zeus.plugin.ZeusBaseActivity;
 import zeus.test.MainActivity;
 import zeus.test.R;
 import zeus.test.hotfixTest.MyInterface;
@@ -17,7 +18,7 @@ import zeus.test.hotfixTest.MyInterface;
  * @date 16/8/21
  * @time 上午2:04
  */
-public class TestHotFixActivity extends Activity {
+public class TestHotFixActivity extends ZeusBaseActivity {
 
     private MyInterface test = new MyInterface() {
         @Override

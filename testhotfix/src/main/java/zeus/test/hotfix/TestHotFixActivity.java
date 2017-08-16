@@ -1,11 +1,11 @@
 package zeus.test.hotfix;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import zeus.plugin.ZeusBaseActivity;
 import zeus.test.MainActivity;
 import zeus.test.R;
 import zeus.test.hotfixTest.MyInterface;
@@ -17,7 +17,7 @@ import zeus.test.hotfixTest.MyInterface;
  * @date 16/8/21
  * @time 上午2:04
  */
-public class TestHotFixActivity extends Activity {
+public class TestHotFixActivity extends ZeusBaseActivity {
 
     private MyInterface test = new MyInterface() {
         @Override
@@ -81,8 +81,9 @@ public class TestHotFixActivity extends Activity {
             return TestHotFixActivity.this.getString();
         }
     };
+
     @Override
-    protected void onCreate( Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         TextView textView = (TextView) findViewById(R.id.text_view);
@@ -92,17 +93,17 @@ public class TestHotFixActivity extends Activity {
         textView.setGravity(Gravity.CENTER);
         textView.setText(new TestHotFix().getTestString());
         Toast.makeText(this, test.getString(), Toast.LENGTH_LONG).show();
-        if(test1 == test2 ||
-                test3 == test4||
-                test5 == test6||
+        if (test1 == test2 ||
+                test3 == test4 ||
+                test5 == test6 ||
                 test7 == test8
-                ){
+                ) {
             int a = 0;
-            int b =a;
+            int b = a;
         }
     }
 
-    public static String getString(){
+    public static String getString() {
         return "页面1";
     }
 }

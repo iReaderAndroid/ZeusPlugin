@@ -431,7 +431,7 @@ public class PluginManager {
             }
             clearViewConstructorCache();
             if ((meta.getFlag() & PluginManifest.FLAG_WITHOUT_RESOURCES) != PluginManifest.FLAG_WITHOUT_RESOURCES) {
-                reloadInstalledPluginResources(false);
+                reloadInstalledPluginResources();
             }
         }
         return true;
@@ -530,56 +530,42 @@ public class PluginManager {
     /**
      * 加载所有已安装的插件的资源，并清除资源中的缓存
      */
-    private static void reloadInstalledPluginResources(boolean isCalledInInit) {
+    private static void reloadInstalledPluginResources() {
         try {
-            AssetManager assetManager = mBaseContext.getResources().getAssets().getClass().newInstance();
-            Method addAssetPath = PluginUtil.getMethod(assetManager.getClass(), "addAssetPath", String.class);
-            for (String assetpath : mOrgAssetPaths) {
-                addAssetPath.invoke(assetManager, assetpath);
-            }
+            AssetManager assetManager = AssetManager.class.newInstance();
+            Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
+            addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
             if (mLoadedPluginList != null && mLoadedPluginList.size() != 0) {
+                //每个插件的packageID都不能一样
                 for (String id : mLoadedPluginList.keySet()) {
-                    String pluginResPath = PluginUtil.getAPKPath(id, mLoadedDiffPluginPathinfoList.get(id));
-                    addAssetPath.invoke(assetManager, pluginResPath);
-                }
-            }
-            Method ensureStringBlocksMethod = PluginUtil.getMethod(assetManager.getClass(), "ensureStringBlocks");
-            ensureStringBlocksMethod.invoke(assetManager);
-            Map resouresMap;
-            Object mResourcesManager = PluginUtil.getField(mBaseContext, "mResourcesManager");
-            if (mResourcesManager != null) {
-                resouresMap = (Map) PluginUtil.getField(mResourcesManager, "mActiveResources");
-                if (resouresMap == null) {
-                    resouresMap = (Map) PluginUtil.getField(mResourcesManager, "mResourceImpls");
-                }
-            } else {
-                Object mMainThread = PluginUtil.getField(mBaseContext, "mMainThread");
-                resouresMap = (Map) PluginUtil.getField(mMainThread, "mActiveResources");
-            }
-            if (resouresMap != null) {
-                for (Object resourceKey : resouresMap.keySet()) {
-                    Object resourcesWeakReference = resouresMap.get(resourceKey);
-                    if (resourcesWeakReference != null &&
-                            ((WeakReference) resourcesWeakReference).get() != null) {
-                        Object resources = ((WeakReference) resourcesWeakReference).get();
-                        PluginUtil.setField(resources, "mAssets", assetManager);
-                        if (!isCalledInInit) {
-                            clearResoucesDrawableCache(resources);
-                        }
+                    //只有带有资源的补丁才会执行添加到assetManager中
+                    PluginManifest manifest = mLoadedPluginList.get(id);
+                    if (manifest.hasResoures()) {
+                        addAssetPath.invoke(assetManager, PluginUtil.getAPKPath(id, mLoadedDiffPluginPathinfoList.get(id)));
                     }
                 }
-            } else {
-                PluginUtil.setField(mBaseContext.getResources(), "mAssets", assetManager);
-                Object mResourcesImpl = PluginUtil.getField(mBaseContext.getResources(), "mResourcesImpl");
-                PluginUtil.setField(mResourcesImpl, "mAssets", assetManager);
-                if (!isCalledInInit) {
-                    clearResoucesDrawableCache(mResourcesImpl);
-                }
             }
-            if (!isCalledInInit) {
-                clearResoucesDrawableCache(mBaseContext.getResources());
-            }
-            mBaseContext.getResources().updateConfiguration(mBaseContext.getResources().getConfiguration(), mBaseContext.getResources().getDisplayMetrics());
+            //这里提前创建一个resource是因为Resources的构造函数会对AssetManager进行一些变量的初始化
+            //还不能创建系统的Resources类，否则中兴系统会出现崩溃问题
+            Resources newResources = new Resources(assetManager,
+                    mBaseContext.getResources().getDisplayMetrics(),
+                    mBaseContext.getResources().getConfiguration());
+
+            PluginUtil.setField(mBaseContext, "mResources", newResources);
+            PluginUtil.setField(mPackageInfo, "mResources", newResources);
+
+            //清除一下之前的resource的数据，释放一些内存
+            //因为这个resource有可能还被系统持有着，内存都没被释放
+            clearResoucesDrawableCache(mNowResources);
+
+            mNowResources = newResources;
+            //需要清理mtheme对象，否则通过inflate方式加载资源会报错
+            PluginUtil.setField(mBaseContext, "mTheme", null);
+            //如果是activity动态加载一个View插件，则需要把activity的mTheme对象也设置为null
+            //比如：
+            // PluginUtil.setField(getCurrActivity().getBaseContext(), "mResources", null);
+            // PluginUtil.setField(getCurrActivity(), "mTheme", null);
+            // PluginUtil.setField(getCurrActivity().getBaseContext(), "mTheme", null);
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -608,7 +594,7 @@ public class PluginManager {
                 ZeusClassLoader classLoader = (ZeusClassLoader) cl;
                 classLoader.removePlugin(pluginId);
             }
-            reloadInstalledPluginResources(false);
+            reloadInstalledPluginResources();
         }
     }
 
@@ -717,7 +703,7 @@ public class PluginManager {
                 Thread.currentThread().setContextClassLoader(classLoader);
                 mNowClassLoader = classLoader;
             }
-            reloadInstalledPluginResources(true);
+            reloadInstalledPluginResources();
             isIniteInstallPlugins = true;
         }
     }

@@ -12,6 +12,7 @@ import java.io.InputStream;
 
 import zeus.plugin.PluginManager;
 import zeus.plugin.PluginUtil;
+import zeus.plugin.ZeusBaseActivity;
 import zeus.plugin.ZeusPlugin;
 import zeus.test.MyApplication;
 import zeus.test.R;
@@ -23,7 +24,7 @@ import zeus.test.R;
  * @date 16/8/21
  * @time 上午1:09
  */
-public class TestPluginActivity extends Activity {
+public class TestPluginActivity extends ZeusBaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
