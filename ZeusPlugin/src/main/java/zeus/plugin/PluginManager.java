@@ -561,11 +561,6 @@ public class PluginManager {
             mNowResources = newResources;
             //需要清理mtheme对象，否则通过inflate方式加载资源会报错
             PluginUtil.setField(mBaseContext, "mTheme", null);
-            //如果是activity动态加载一个View插件，则需要把activity的mTheme对象也设置为null
-            //比如：
-            // PluginUtil.setField(getCurrActivity().getBaseContext(), "mResources", null);
-            // PluginUtil.setField(getCurrActivity(), "mTheme", null);
-            // PluginUtil.setField(getCurrActivity().getBaseContext(), "mTheme", null);
         } catch (Throwable e) {
             e.printStackTrace();
         }

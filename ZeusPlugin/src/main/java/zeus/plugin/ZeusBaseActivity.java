@@ -33,8 +33,17 @@ public class ZeusBaseActivity extends Activity {
      * 解决有时插件通过inflate找不到资源的问题
      * @return Resources.Theme
      */
+    @Override
     public Resources.Theme getTheme() {
-        return helper.getTheme(super.getTheme());
+        return helper.getTheme(this);
+    }
+
+    /**
+     * 给ZeusHelper调用的获取原始theme的方法
+     * @return
+     */
+    public Resources.Theme getSuperTheme() {
+        return super.getTheme();
     }
     //---------------------------插件相关代码-------------------------end
 }

@@ -24,15 +24,6 @@ public class ZeusBaseApplication extends Application {
         return PluginManager.getResources();
     }
 
-    /**
-     * 解决有时插件通过inflate找不到资源的问题
-     *
-     * @return Resources.Theme
-     */
-    public Resources.Theme getTheme() {
-        return helper.getTheme(super.getTheme());
-    }
-
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
