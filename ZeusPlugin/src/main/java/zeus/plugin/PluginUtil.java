@@ -82,20 +82,50 @@ public class PluginUtil {
 
     /**
      * 获取dex优化后的文件地址
-     *
+     * @param pluingid 插件id
      * @param apkName apk的名称
      * @return dex优化后的文件地址
      */
-    public static String getDexCacheFilePath(String apkName) {
-        return getDexCacheParentDirectPath() + apkName + ".dex";
+    public static String getDexCacheFilePath(String pluingid, String apkName) {
+        return getDexCacheParentDirectPath(pluingid) + apkName + ".dex";
     }
 
+    /**
+     * 获取某个插件id的dex优化后路径
+     * @param pluginid 插件id
+     * @return 某个插件id的dex优化后路径
+     */
+    public static String getDexCacheParentDirectPath(String pluginid) {
+        String path;
+        if(TextUtils.isEmpty(pluginid)){
+            path = getDexCacheParentDirectPath();
+        }else {
+            path = getDexCacheParentDirectPath() + pluginid + "/";
+        }
+        if(!isDirExist(path)){
+            createDirWithFile(path);
+        }
+
+        return path;
+    }
+
+    /**
+     * 判断某个文件是否是文件夹
+     * @param filePathName
+     * @return
+     */
+    public static boolean isDirExist(String filePathName) {
+        if(TextUtils.isEmpty(filePathName)) return false;
+        if(!filePathName.endsWith("/")) filePathName +="/";
+        File file = new File(filePathName);
+        return (file.isDirectory() && file.exists());
+    }
     /**
      * 优化后的odex/opt文件的文件夹路径
      *
      * @return 优化后的odex/opt文件的文件夹路径
      */
-    public static String getDexCacheParentDirectPath() {
+    private static String getDexCacheParentDirectPath() {
         return getInsidePluginPath() + "dalvik-cache/";
     }
 

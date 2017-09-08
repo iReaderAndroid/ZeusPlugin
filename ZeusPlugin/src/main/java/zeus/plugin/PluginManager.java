@@ -112,7 +112,6 @@ public class PluginManager {
 
     private static void createPath() {
         PluginUtil.createDir(PluginUtil.getInsidePluginPath());
-        PluginUtil.createDir(PluginUtil.getDexCacheParentDirectPath());
     }
 
     private static void initOrgAssetPaths(Context baseContext) {
@@ -153,7 +152,7 @@ public class PluginManager {
                 //提前将dex文件优化为odex或者opt文件
                 if (ret) {
                     try {
-                        new DexClassLoader(PluginUtil.getAPKPath(key), PluginUtil.getDexCacheParentDirectPath(), null, mBaseClassLoader.getParent());
+                        new DexClassLoader(PluginUtil.getAPKPath(key), PluginUtil.getDexCacheParentDirectPath(key), null, mBaseClassLoader.getParent());
                     } catch (Throwable e) {
                         e.printStackTrace();
                     }
@@ -534,7 +533,13 @@ public class PluginManager {
         try {
             AssetManager assetManager = AssetManager.class.newInstance();
             Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
-            addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
+            if (mOrgAssetPaths.size() != 0) {
+                for (String orgAssetPath : mOrgAssetPaths) {
+                    addAssetPath.invoke(assetManager, orgAssetPath);
+                }
+            } else {
+                addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
+            }
             if (mLoadedPluginList != null && mLoadedPluginList.size() != 0) {
                 //每个插件的packageID都不能一样
                 for (String id : mLoadedPluginList.keySet()) {
@@ -648,7 +653,7 @@ public class PluginManager {
                     PluginUtil.getLibFileInside(pluginId));
         } else {
             hotfixClassLoader = new ZeusHotfixClassLoader(PluginUtil.getAPKPath(pluginId, pathInfo),
-                    PluginUtil.getDexCacheParentDirectPath(),
+                    PluginUtil.getDexCacheParentDirectPath(pluginId),
                     PluginUtil.getLibFileInside(pluginId),
                     classLoader);
             hotfixClassLoader.setOrgAPKClassLoader(orgClassLoader);

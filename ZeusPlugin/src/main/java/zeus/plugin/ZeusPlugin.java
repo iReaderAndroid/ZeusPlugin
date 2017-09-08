@@ -32,7 +32,7 @@ public class ZeusPlugin {
         PluginUtil.createDir(PluginUtil.getPlugDir(mPluginId));
 
         //将当前时间记录为插件的随机数，等效于android系统后面~1、~2等
-        mInstalledPathInfo = String.valueOf(System.currentTimeMillis());
+        mInstalledPathInfo = String.valueOf(System.nanoTime());
 
         //获取插件apk文件
         String path = PluginUtil.getZipPath(mPluginId);
@@ -78,7 +78,7 @@ public class ZeusPlugin {
         }
         try {
             //预优化补丁dex的加载
-            new DexClassLoader(getAPKPath(mPluginId), PluginUtil.getDexCacheParentDirectPath(), "", PluginManager.mBaseClassLoader);
+            new DexClassLoader(getAPKPath(mPluginId), PluginUtil.getDexCacheParentDirectPath(mPluginId), "", PluginManager.mBaseClassLoader);
         }catch (Throwable e){
             e.printStackTrace();
         }
@@ -102,7 +102,7 @@ public class ZeusPlugin {
                 return true;
             }
             PluginUtil.createDir(PluginUtil.getPlugDir(mPluginId));
-            mInstalledPathInfo = String.valueOf(System.currentTimeMillis());
+            mInstalledPathInfo = String.valueOf(System.nanoTime());
 
             FileOutputStream out = null;
             InputStream in = null;
@@ -150,7 +150,7 @@ public class ZeusPlugin {
         }
         try {
             //预优化补丁dex的加载
-            new DexClassLoader(getAPKPath(mPluginId), PluginUtil.getDexCacheParentDirectPath(), "", PluginManager.mBaseClassLoader);
+            new DexClassLoader(getAPKPath(mPluginId), PluginUtil.getDexCacheParentDirectPath(mPluginId), "", PluginManager.mBaseClassLoader);
         }catch (Throwable e){
             e.printStackTrace();
         }
@@ -178,7 +178,7 @@ public class ZeusPlugin {
                         File dir = new File(f.getParent() + "/" + fileName);
                         PluginUtil.deleteDirectory(dir);
 
-                        File cacheFile = new File(PluginUtil.getDexCacheFilePath(fileName));
+                        File cacheFile = new File(PluginUtil.getDexCacheFilePath(mPluginId, fileName));
                         if (cacheFile.exists()) {
                             cacheFile.delete();
                         }

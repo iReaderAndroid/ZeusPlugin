@@ -39,7 +39,7 @@ class ZeusClassLoader extends ClassLoader {
             arraycopy(old, 0, mClassLoader, 0, oldLenght);
         }
         mClassLoader[mClassLoader.length - 1] = new ZeusPluginClassLoader(pluginId, dexPath,
-                PluginUtil.getDexCacheParentDirectPath(),
+                PluginUtil.getDexCacheParentDirectPath(pluginId),
                 libPath,
                 getParent());
     }
