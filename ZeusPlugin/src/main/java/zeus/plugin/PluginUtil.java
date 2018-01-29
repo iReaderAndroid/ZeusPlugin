@@ -594,6 +594,33 @@ public class PluginUtil {
     }
 
     /**
+     * 设置paramClass中所有名称为paramString的成员变量的值为newClass
+     * @param paramClass  类对象
+     * @param paramString 域的名称
+     * @param newClass    新的对象
+     */
+    public static void setFieldAllClass(Object paramClass, String paramString,
+                                        Object newClass) {
+        if (paramClass == null || TextUtils.isEmpty(paramString)) return;
+        Field field;
+        Class cl = paramClass.getClass();
+        for (; cl != null; ) {
+            try {
+                field = cl.getDeclaredField(paramString);
+                if (field != null) {
+                    field.setAccessible(true);
+                    field.set(paramClass, newClass);
+                }
+            } catch (Throwable e) {
+
+            }
+            cl = cl.getSuperclass();
+        }
+
+        return;
+    }
+
+    /**
      * 反射的方式获取某个类的方法
      *
      * @param cl             类的class

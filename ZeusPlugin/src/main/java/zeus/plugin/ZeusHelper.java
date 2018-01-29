@@ -62,13 +62,16 @@ public class ZeusHelper {
         Resources localResources = PluginManager.mNowResources;
         if ( localResources != null && mMyResources != localResources) {
             mMyResources = localResources;
-            PluginUtil.setField(zeusBaseActivity.getBaseContext(), "mResources", localResources);
+
+            //中兴的rom中会将zeusBaseActivity.getBaseContext()的一个父类中添加mResources和mTheme，导致设置不全，这里全部设置
+            PluginUtil.setFieldAllClass(zeusBaseActivity.getBaseContext(), "mResources", localResources);
+            PluginUtil.setFieldAllClass(zeusBaseActivity.getBaseContext(), "mTheme", null);
+
             //AppCompatActivity包含了一个Resouces，这里设置为null让其再次生成一遍
             PluginUtil.setField(zeusBaseActivity, "mResources", null);
             //原始的theme指向的Resources是老的Resources，无法访问新插件，这里设置为null，
             // 系统会再次使用新的Resouces来生成一次theme，新的theme才能访问新的插件资源
             PluginUtil.setField(zeusBaseActivity, "mTheme", null);
-            PluginUtil.setField(zeusBaseActivity.getBaseContext(), "mTheme", null);
         }
         return zeusBaseActivity.getSuperTheme();
     }

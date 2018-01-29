@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.os.Build;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.webkit.WebView;
@@ -26,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import dalvik.system.DexClassLoader;
@@ -132,6 +134,43 @@ public class PluginManager {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 在android 7.0以上设置resource的share lib path，解决加载webView时package id not found的问题
+     * @param resources
+     * @param orgAssetManger
+     */
+    private static void addShareLibPaths(Resources resources, AssetManager orgAssetManger) {
+        if(Build.VERSION.SDK_INT >= 24) {
+            try {
+                ArrayList<String> orgShareLibPaths = new ArrayList<>();
+                AssetManager assetManager = resources.getAssets();
+                Method getStringBlockCountMethod = PluginUtil.getMethod(assetManager.getClass(), "getStringBlockCount");
+                Method getCookieNameMethod = PluginUtil.getMethod(assetManager.getClass(), "getCookieName", Integer.TYPE);
+                Method addAssetPathAsSharedLibrary = AssetManager.class.getMethod("addAssetPathAsSharedLibrary", String.class);
+                int num = (Integer) getStringBlockCountMethod.invoke(assetManager);
+                String str;
+                for (int i = 1; i <= num; i++) {
+                    str = (String) getCookieNameMethod.invoke(assetManager, i);
+                    if (!TextUtils.isEmpty(str) &&
+                            !mOrgAssetPaths.contains(str) &&
+                            !str.contains(PluginConstant.EXP_PLUG_PREFIX) &&
+                            !str.contains("hotfix")) {
+                        orgShareLibPaths.add(str);
+                    }
+                }
+
+                if (addAssetPathAsSharedLibrary != null) {
+                    for (String orgAssetPath : orgShareLibPaths) {
+                        addAssetPathAsSharedLibrary.invoke(orgAssetManger, orgAssetPath);
+                    }
+                }
+            } catch (Throwable e) {
+
+            }
+        }
+    }
+
     /**
      * 安装初始的内置插件
      */
@@ -465,6 +504,28 @@ public class PluginManager {
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException e1) {
             e1.printStackTrace();
         }
+
+        //清除TintContextWrapper类中的sCache
+        try {
+            Class tintContextWrapper = mNowClassLoader.loadClass("android.support.v7.widget.TintContextWrapper");
+            Field sCacheField = tintContextWrapper.getDeclaredField("sCache");
+
+            Field lockField = tintContextWrapper.getDeclaredField("CACHE_LOCK");
+            if(lockField != null){
+                lockField.setAccessible(true);
+                Object lock =  lockField.get(null);
+                synchronized (lock){
+                    sCacheField.setAccessible(true);
+                    List list = (List) sCacheField.get(null);
+                    list.clear();
+                }
+            }else{
+                sCacheField.setAccessible(true);
+                List list = (List) sCacheField.get(null);
+                list.clear();
+            }
+        } catch (Throwable e) {
+        }
     }
 
     private static void clearCacheObject(Object drawableCache) {
@@ -540,6 +601,10 @@ public class PluginManager {
             } else {
                 addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
             }
+
+            //解决android 7.0以上版本启动webView时package id not found的问题
+            addShareLibPaths(mNowResources, assetManager);
+
             if (mLoadedPluginList != null && mLoadedPluginList.size() != 0) {
                 //每个插件的packageID都不能一样
                 for (String id : mLoadedPluginList.keySet()) {

@@ -13,12 +13,18 @@ public class ZeusInstrumentation extends Instrumentation{
 
     @Override
     public Activity newActivity(ClassLoader cl, String className, Intent intent) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-        if(className.equals("com.zeus.ZeusActivityForStandard") && intent != null){
+        if(intent != null){
             Bundle bundle = intent.getExtras();
             if(bundle != null){
-                String realActivity = bundle.getString(PluginConstant.PLUGIN_REAL_ACTIVITY);
-                if(!TextUtils.isEmpty(realActivity)){
-                    return super.newActivity(cl, realActivity, intent);
+                //给Bundle设置classLoader以使Bundle中序列化对象可以直接转化为插件中的对象
+                //类似于在宿主中这么使用:TestInPlugin testInPlugin = (TestInPlugin)bundle.get("TestInPlugin");
+                //TestInPlugin是在插件中定义的,如果不这么设置则会找不到TestInPlugin类
+                bundle.setClassLoader(PluginManager.mNowClassLoader);
+                if(className.equals("com.zeus.ZeusActivityForStandard")) {
+                    String realActivity = bundle.getString(PluginConstant.PLUGIN_REAL_ACTIVITY);
+                    if (!TextUtils.isEmpty(realActivity)) {
+                        return super.newActivity(cl, realActivity, intent);
+                    }
                 }
             }
         }
