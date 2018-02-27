@@ -458,7 +458,7 @@ public class PluginManager {
                         ZeusClassLoader classLoader = (ZeusClassLoader) cl;
                         classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId));
                     } else {
-                        ZeusClassLoader classLoader = new ZeusClassLoader(cl);
+                        ZeusClassLoader classLoader = new ZeusClassLoader(mBaseContext.getPackageCodePath(), cl);
                         classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId));
                         PluginUtil.setField(mPackageInfo, "mClassLoader", classLoader);
                         Thread.currentThread().setContextClassLoader(classLoader);
@@ -745,7 +745,7 @@ public class PluginManager {
                 if(!isSupport(pluginId))continue;
                 if (PluginUtil.isPlugin(pluginId)) {
                     if (classLoader == null) {
-                        classLoader = new ZeusClassLoader(mBaseContext.getClassLoader());
+                        classLoader = new ZeusClassLoader(mBaseContext.getPackageCodePath(), mBaseContext.getClassLoader());
                     }
                     String pathInfo = PluginUtil.getInstalledPathInfo(pluginId);
                     classLoader.addAPKPath(pluginId, PluginUtil.getAPKPath(pluginId, pathInfo), PluginUtil.getLibFileInside(pluginId));

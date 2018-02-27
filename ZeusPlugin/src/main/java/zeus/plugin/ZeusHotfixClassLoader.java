@@ -84,6 +84,27 @@ class ZeusHotfixClassLoader extends ZeusPluginClassLoader {
         }
     }
 
+    /***
+     * 每个插件里也可能有多个dex文件，挨个的查找dex文件
+     */
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        ensureInit();
+        Class clazz;
+        int length = mFiles.length;
+        for (int i = 0; i < length; i++) {
+
+            if (mDexs[i] != null) {
+                String slashName = name.replace('.', '/');
+                clazz = mDexs[i].loadClass(slashName, mChild);
+                if (clazz != null) {
+                    return clazz;
+                }
+            }
+        }
+        throw new ClassNotFoundException(name + " in loader " + this);
+    }
+
     @Override
     protected Class<?> loadClass(String className, boolean resolve) throws ClassNotFoundException {
         //先查找补丁自己已经加载过的有没有

@@ -2,6 +2,7 @@ package zeus.plugin;
 
 import android.text.TextUtils;
 
+import dalvik.system.PathClassLoader;
 import static java.lang.System.arraycopy;
 
 /***
@@ -9,13 +10,13 @@ import static java.lang.System.arraycopy;
  * <p>
  * Created by huangjian on 2016/6/21.
  */
-class ZeusClassLoader extends ClassLoader {
+class ZeusClassLoader extends PathClassLoader {//DexClassLoader {
     //这里每个插件对应着一个ClassLoader，一旦插件更新了，则classLoader也会使用新的。
     //这样java的class就会从新的classLoader中查找，而不会去使用旧的classLoader的缓存
     private ZeusPluginClassLoader[] mClassLoader = null;
 
-    public ZeusClassLoader(ClassLoader parent) {
-        super(parent);
+    public ZeusClassLoader(String dexPath, ClassLoader parent) {
+        super(dexPath, parent);
     }
 
     public ZeusPluginClassLoader[] getClassLoaders() {
