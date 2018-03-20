@@ -2,7 +2,10 @@ package zeus.plugin;
 
 import android.text.TextUtils;
 
+import java.io.File;
+
 import dalvik.system.PathClassLoader;
+
 import static java.lang.System.arraycopy;
 
 /***
@@ -14,9 +17,11 @@ class ZeusClassLoader extends PathClassLoader {//DexClassLoader {
     //这里每个插件对应着一个ClassLoader，一旦插件更新了，则classLoader也会使用新的。
     //这样java的class就会从新的classLoader中查找，而不会去使用旧的classLoader的缓存
     private ZeusPluginClassLoader[] mClassLoader = null;
+    private String mNativeLibraryPath = null;
 
-    public ZeusClassLoader(String dexPath, ClassLoader parent) {
+    public ZeusClassLoader(String dexPath, ClassLoader parent, String nativeLibraryPath) {
         super(dexPath, parent);
+        mNativeLibraryPath = nativeLibraryPath;
     }
 
     public ZeusPluginClassLoader[] getClassLoaders() {
@@ -27,8 +32,8 @@ class ZeusClassLoader extends PathClassLoader {//DexClassLoader {
      * 添加一个插件到当前的classLoader中
      *
      * @param pluginId 插件名称
-     * @param dexPath dex文件路径
-     * @param libPath so文件夹路径
+     * @param dexPath  dex文件路径
+     * @param libPath  so文件夹路径
      */
     protected void addAPKPath(String pluginId, String dexPath, String libPath) {
         if (mClassLoader == null) {
@@ -103,6 +108,21 @@ class ZeusClassLoader extends PathClassLoader {//DexClassLoader {
             }
         }
         throw new ClassNotFoundException(className + " in loader " + this);
+    }
+
+    @Override
+    public String findLibrary(String LibraryName) {
+        String pathName = super.findLibrary(LibraryName);
+        if (!TextUtils.isEmpty(pathName)) return pathName;
+        if (!TextUtils.isEmpty(mNativeLibraryPath)) {
+            String fileName = System.mapLibraryName(LibraryName);
+            File libraryFile = new File(mNativeLibraryPath, fileName);
+            if (libraryFile.exists()) {
+                return libraryFile.getAbsolutePath();
+            }
+            return null;
+        }
+        return null;
     }
 }
 

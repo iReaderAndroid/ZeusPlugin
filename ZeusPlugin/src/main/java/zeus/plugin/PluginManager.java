@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -466,7 +467,12 @@ public class PluginManager {
                         ZeusClassLoader classLoader = (ZeusClassLoader) cl;
                         classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId));
                     } else {
-                        ZeusClassLoader classLoader = new ZeusClassLoader(mBaseContext.getPackageCodePath(), cl);
+                        String nativeLibraryDir = null;
+                        ApplicationInfo applicationInfo = mBaseContext.getApplicationInfo();
+                        if (applicationInfo != null) {
+                            nativeLibraryDir = applicationInfo.nativeLibraryDir;
+                        }
+                        ZeusClassLoader classLoader = new ZeusClassLoader(mBaseContext.getPackageCodePath(), cl, nativeLibraryDir);
                         classLoader.addAPKPath(pluginId, pluginApkPath, PluginUtil.getLibFileInside(pluginId));
                         PluginUtil.setField(mPackageInfo, "mClassLoader", classLoader);
                         Thread.currentThread().setContextClassLoader(classLoader);
@@ -753,7 +759,12 @@ public class PluginManager {
                 if(!isSupport(pluginId))continue;
                 if (PluginUtil.isPlugin(pluginId)) {
                     if (classLoader == null) {
-                        classLoader = new ZeusClassLoader(mBaseContext.getPackageCodePath(), mBaseContext.getClassLoader());
+                        String nativeLibraryDir = null;
+                        ApplicationInfo applicationInfo = mBaseContext.getApplicationInfo();
+                        if (applicationInfo != null) {
+                            nativeLibraryDir = applicationInfo.nativeLibraryDir;
+                        }
+                        classLoader = new ZeusClassLoader(mBaseContext.getPackageCodePath(), mBaseContext.getClassLoader(), nativeLibraryDir);
                     }
                     String pathInfo = PluginUtil.getInstalledPathInfo(pluginId);
                     classLoader.addAPKPath(pluginId, PluginUtil.getAPKPath(pluginId, pathInfo), PluginUtil.getLibFileInside(pluginId));
