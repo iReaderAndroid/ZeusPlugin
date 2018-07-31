@@ -196,7 +196,7 @@ public class PluginManager {
                             for(int i = 0; i < sparseArray.size(); i++){
                                 if(mWebviewApks.containsKey(sparseArray.valueAt(i))){
                                     String webviewApk = mWebviewApks.get(sparseArray.valueAt(i));
-                                    if(PluginUtil.exist(webviewApk)){
+                                    if(PluginUtil.exists(webviewApk)){
                                         if (addAssetPathAsSharedLibrary != null) {
                                             addAssetPathAsSharedLibrary.invoke(orgAssetManger, webviewApk);
                                         }else {
