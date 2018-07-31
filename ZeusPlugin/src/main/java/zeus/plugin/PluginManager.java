@@ -11,6 +11,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Build;
 import android.text.TextUtils;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.webkit.WebView;
 
@@ -69,6 +70,8 @@ public class PluginManager {
      */
     private static HashMap<String, ZeusPlugin> mPluginMap = new HashMap<>();
 
+    private static HashMap<String, String> mWebviewApks = new HashMap<>();
+   
     /**
      * 得在插件相关的方法调用之前调用
      *
@@ -114,6 +117,7 @@ public class PluginManager {
 
     /**
      * 获取原始assetManager中的设置的资源路径
+     * 目的是为了当资源动态加载时，如果AssetManager中已经加载过WebView资源，则将WebView资源手动添加到新的AssetManager中
      * @param baseContext
      */
     private static void initOrgAssetPaths(Context baseContext) {
@@ -133,6 +137,9 @@ public class PluginManager {
         } catch (Throwable e) {
             e.printStackTrace();
         }
+        //将系统中可能用到的webView的资源apk添加到map中
+        mWebviewApks.put("com.google.android.webview", "/system/app/WebViewGoogle/WebViewGoogle.apk");
+        mWebviewApks.put("com.android.webview", "/system/app/webview/webview.apk");
     }
 
     /**
@@ -143,7 +150,7 @@ public class PluginManager {
      * @param orgAssetManger
      */
     private static void addShareLibPaths(Resources resources, AssetManager orgAssetManger) {
-        if(Build.VERSION.SDK_INT >= 21) {
+        if(Build.VERSION.SDK_INT >= 21 && Build.VERSION.SDK_INT < 28) {//适配android P，android P中以下有部分方法已经不存在
             try {
                 ArrayList<String> orgShareLibPaths = new ArrayList<>();
                 AssetManager assetManager = resources.getAssets();
@@ -176,6 +183,34 @@ public class PluginManager {
                 }
             } catch (Throwable e) {
 
+            }
+        }else if( Build.VERSION.SDK_INT >= 28){//适配android P以上
+            try {
+                AssetManager assetManager = resources.getAssets();
+                Method addAssetPathAsSharedLibrary = PluginUtil.getMethod(assetManager.getClass(), "addAssetPathAsSharedLibrary", String.class);
+                Method getAssignedPackageIdentifiers = PluginUtil.getMethod(assetManager.getClass(), "getAssignedPackageIdentifiers");
+                if(getAssignedPackageIdentifiers != null){
+                    SparseArray<String> sparseArray = (SparseArray<String>) getAssignedPackageIdentifiers.invoke(assetManager);
+                    if(sparseArray != null ){
+                        if(mWebviewApks.size() > 0) {
+                            for(int i = 0; i < sparseArray.size(); i++){
+                                if(mWebviewApks.containsKey(sparseArray.valueAt(i))){
+                                    String webviewApk = mWebviewApks.get(sparseArray.valueAt(i));
+                                    if(PluginUtil.exist(webviewApk)){
+                                        if (addAssetPathAsSharedLibrary != null) {
+                                            addAssetPathAsSharedLibrary.invoke(orgAssetManger, webviewApk);
+                                        }else {
+                                            Method addAssetPath = PluginUtil.getMethod(assetManager.getClass(), "addAssetPath", String.class);
+                                            addAssetPath.invoke(orgAssetManger, webviewApk);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Throwable e) {
+                
             }
         }
     }
