@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -56,7 +57,6 @@ public class PluginManager {
     private static HashMap<String, PluginManifest> mInstalledPluginList = null; //已安装的插件列表
     private static HashMap<String, PluginManifest> mLoadedPluginList = null;    //已加载的插件列表
     private static HashMap<String, String> mLoadedDiffPluginPathinfoList = null;
-    private static ArrayList<String> mOrgAssetPaths = new ArrayList<>();
 
     private static final Object mInstalledPluginListLock = new Object(); //插件安装的锁，支持多线程安装
     private static final Object mLoadedPluginListLock = new Object();    //修改已加载的插件对象的锁
@@ -70,8 +70,6 @@ public class PluginManager {
      */
     private static HashMap<String, ZeusPlugin> mPluginMap = new HashMap<>();
 
-    private static HashMap<String, String> mWebviewApks = new HashMap<>();
-   
     /**
      * 得在插件相关的方法调用之前调用
      *
@@ -90,7 +88,6 @@ public class PluginManager {
         mBaseClassLoader = mBaseContext.getClassLoader();
         mNowResources = mBaseContext.getResources();
         mBaseResources = mNowResources;
-        initOrgAssetPaths(mBaseContext);
         //更改系统的Instrumentation对象，以便创建插件的activity
         Object mMainThread = PluginUtil.getField(mBaseContext, "mMainThread");
         PluginUtil.setField(mMainThread, "mInstrumentation", new ZeusInstrumentation());
@@ -116,33 +113,6 @@ public class PluginManager {
     }
 
     /**
-     * 获取原始assetManager中的设置的资源路径
-     * 目的是为了当资源动态加载时，如果AssetManager中已经加载过WebView资源，则将WebView资源手动添加到新的AssetManager中
-     * @param baseContext
-     */
-    private static void initOrgAssetPaths(Context baseContext) {
-        try {
-            mOrgAssetPaths.clear();
-            AssetManager assetManager = baseContext.getAssets();
-            Method getStringBlockCountMethod = PluginUtil.getMethod(assetManager.getClass(), "getStringBlockCount");
-            Method getCookieNameMethod = PluginUtil.getMethod(assetManager.getClass(), "getCookieName", Integer.TYPE);
-            int num = (Integer) getStringBlockCountMethod.invoke(assetManager, new Object[0]);
-            String str;
-            for (int i = 1; i <= num; i++) {
-                str = (String) getCookieNameMethod.invoke(assetManager, i);
-                if (!mOrgAssetPaths.contains(str)) {
-                    mOrgAssetPaths.add(str);
-                }
-            }
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        //将系统中可能用到的webView的资源apk添加到map中
-        mWebviewApks.put("com.google.android.webview", "/system/app/WebViewGoogle/WebViewGoogle.apk");
-        mWebviewApks.put("com.android.webview", "/system/app/webview/webview.apk");
-    }
-
-    /**
      * 在android 5.0以上设置resource的share lib path，解决加载webView时package id not found的问题
      * 系统会在加载webView之后通过调用AssetManager中的addAssetPathAsSharedLibrary(7.0以上)或者addAssetPath(5.0-7.0之间)
      * 将webview使用的资源apk添加到AssetManager中，因此重新生成AssetManager时也需要对应的设置一下
@@ -150,67 +120,27 @@ public class PluginManager {
      * @param orgAssetManger
      */
     private static void addShareLibPaths(Resources resources, AssetManager orgAssetManger) {
-        if(Build.VERSION.SDK_INT >= 21 && Build.VERSION.SDK_INT < 28) {//适配android P，android P中以下有部分方法已经不存在
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             try {
-                ArrayList<String> orgShareLibPaths = new ArrayList<>();
-                AssetManager assetManager = resources.getAssets();
-                Method getStringBlockCountMethod = PluginUtil.getMethod(assetManager.getClass(), "getStringBlockCount");
-                Method getCookieNameMethod = PluginUtil.getMethod(assetManager.getClass(), "getCookieName", Integer.TYPE);
-                Method addAssetPathAsSharedLibrary = AssetManager.class.getMethod("addAssetPathAsSharedLibrary", String.class);
-                int num = (Integer) getStringBlockCountMethod.invoke(assetManager);
-                String str;
-                for (int i = 1; i <= num; i++) {
-                    str = (String) getCookieNameMethod.invoke(assetManager, i);
-                    if (!TextUtils.isEmpty(str) &&
-                            !mOrgAssetPaths.contains(str) &&
-                            !str.contains(PluginConstant.EXP_PLUG_PREFIX) &&
-                            !str.contains("hotfix")) {
-                        orgShareLibPaths.add(str);
-                    }
+                PackageInfo packageInfo = null;
+                Method getLoadedPackageInfoMethod = PluginUtil.getMethod(mBaseClassLoader.loadClass("android.webkit.WebViewFactory"), "getLoadedPackageInfo", null);
+                if(getLoadedPackageInfoMethod != null){
+                    packageInfo = (PackageInfo)getLoadedPackageInfoMethod.invoke(null);
                 }
-
-                if(orgShareLibPaths.size() > 0) {
-                    if (addAssetPathAsSharedLibrary != null) {//有的7.0的rom上也可能没有这个方法
-                        for (String orgAssetPath : orgShareLibPaths) {
-                            addAssetPathAsSharedLibrary.invoke(orgAssetManger, orgAssetPath);
-                        }
+                String webviewApk;
+                if (packageInfo != null && packageInfo.applicationInfo != null) {
+                    webviewApk = packageInfo.applicationInfo.sourceDir;
+                    AssetManager assetManager = resources.getAssets();
+                    Method addAssetPathAsSharedLibrary = PluginUtil.getMethod(assetManager.getClass(), "addAssetPathAsSharedLibrary", String.class);
+                    if (addAssetPathAsSharedLibrary != null) {
+                        addAssetPathAsSharedLibrary.invoke(orgAssetManger, webviewApk);
                     } else {
                         Method addAssetPath = PluginUtil.getMethod(assetManager.getClass(), "addAssetPath", String.class);
-                        for (String orgAssetPath : orgShareLibPaths) {
-                            addAssetPath.invoke(orgAssetManger, orgAssetPath);
-                        }
+                        addAssetPath.invoke(orgAssetManger, webviewApk);
                     }
                 }
-            } catch (Throwable e) {
-
-            }
-        }else if( Build.VERSION.SDK_INT >= 28){//适配android P以上
-            try {
-                AssetManager assetManager = resources.getAssets();
-                Method addAssetPathAsSharedLibrary = PluginUtil.getMethod(assetManager.getClass(), "addAssetPathAsSharedLibrary", String.class);
-                Method getAssignedPackageIdentifiers = PluginUtil.getMethod(assetManager.getClass(), "getAssignedPackageIdentifiers");
-                if(getAssignedPackageIdentifiers != null){
-                    SparseArray<String> sparseArray = (SparseArray<String>) getAssignedPackageIdentifiers.invoke(assetManager);
-                    if(sparseArray != null ){
-                        if(mWebviewApks.size() > 0) {
-                            for(int i = 0; i < sparseArray.size(); i++){
-                                if(mWebviewApks.containsKey(sparseArray.valueAt(i))){
-                                    String webviewApk = mWebviewApks.get(sparseArray.valueAt(i));
-                                    if(PluginUtil.exists(webviewApk)){
-                                        if (addAssetPathAsSharedLibrary != null) {
-                                            addAssetPathAsSharedLibrary.invoke(orgAssetManger, webviewApk);
-                                        }else {
-                                            Method addAssetPath = PluginUtil.getMethod(assetManager.getClass(), "addAssetPath", String.class);
-                                            addAssetPath.invoke(orgAssetManger, webviewApk);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (Throwable e) {
-                
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
             }
         }
     }
@@ -643,13 +573,7 @@ public class PluginManager {
         try {
             AssetManager assetManager = AssetManager.class.newInstance();
             Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
-            if (mOrgAssetPaths.size() != 0) {
-                for (String orgAssetPath : mOrgAssetPaths) {
-                    addAssetPath.invoke(assetManager, orgAssetPath);
-                }
-            } else {
-                addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
-            }
+            addAssetPath.invoke(assetManager, mBaseContext.getPackageResourcePath());
 
             //解决android 5.0以上版本启动webView时package id not found的问题
             addShareLibPaths(mNowResources, assetManager);
