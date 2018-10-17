@@ -404,6 +404,7 @@ public class PluginManager {
                     if (!plugin.installAssetPlugin()) {
                         return false;
                     } else {
+                        pathInfo = PluginUtil.getInstalledPathInfo(pluginId);
                         pluginApkPath = PluginUtil.getAPKPath(pluginId);
                     }
                 } else {
